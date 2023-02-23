@@ -19,6 +19,14 @@ tasks:
       sudo apt update
       sudo apt install -y postgresql-client-13 libpq-dev
 
+ports:
+  - port: 3000
+    name: Frontend-react-js
+    visibility: public
+  - port: 4567
+    name: Backend-flask
+    visibility: public
+
 vscode:
   extensions:
     - 42Crunch.vscode-openapi
