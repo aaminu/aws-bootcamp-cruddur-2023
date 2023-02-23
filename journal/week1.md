@@ -127,3 +127,61 @@
         	Image in Dockerhub:
 
             ![dockerhub](./images/dockerhub.png)
+
+3. Healthcheck in the docker-compose file (PS: This is on the main project)
+    -   implemented for both frontend and backend container by adding the following to the [docker-compose](../docker-compose.yml) file:
+        ```yaml
+        # backend-flask
+        healthcheck:
+            test: ["CMD-SHELL", "curl -f http://localhost:4567/api/activities/home || exit 1", "curl -f https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}/api/activities/home || exit 1"]
+            interval: 1m30s
+            timeout: 30s
+            retries: 5
+            start_period: 30s
+        
+        # frontend-re
+        healthcheck:
+            test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1", "curl -f https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}/ || exit 1"]
+            interval: 1m30s
+            timeout: 30s
+            retries: 5
+            start_period: 30s
+        ``` 
+    - To ensure that ports open to public upon launch of containers, an additional command is added to the [.gitpod.yml](../.gitpod.yml) file. This can be seen below
+        ```yaml
+        ports:
+          - port: 3000
+            name: Frontend-react-js
+            visibility: public
+          - port: 4567
+            name: Backend-flask
+            visibility: public
+        ```
+    - The docker compose-up command was issued and all containers were compiled and started. A simple ``` docker ps ``` showed all container were running. The two containers with healthchecks has new tags *(health: starting)* under their status. Please see below:
+
+        ![healthcheck1](./images/healthcheck1.png)
+    
+    - After a few minute the the backend-flask became unhealthy. To investigate, the following command was issued in the terminal:
+        ```bash
+        $ docker inspect --format='{{json .State.Health}}' < name of backend-flask contain>
+        ```
+        The *< name of backend-flask contain >* is *aws-bootcamp-cruddur-2023-backend-flask-1*.
+    - Investigating the error from above revealed that certain distros like Alpine and Buster have no curl installed. To fix that problem, I updated the backendflask/ [Dockerfile](../backend-flask/Dockerfile) to install curl as part of it's tools. It was acheived by adding the following:
+        ```docker
+        RUN apt-get update && apt-get install -y curl
+        ```
+    - Using the Compose Restart and allowing the container to run for a while, both frontend and backend are healthy. These can be checked by Please see the status after 33mins of runtime below:
+
+        ![healthcheck2](./images/healthcheck2.png)
+
+
+    - For logging purpose, the following command was used to capture a json format health status and piped into a json file. Please see below for sample
+        ```bash
+        $ docker inspect --format='{{json .State.Health}}' < name of backend-flask contain> > <file_name.json>
+        #To beatify the json for reability, do
+        $ python3 -m json.tool <file_name.json> <new_file_name.json>
+        #remove redundant file
+        $ rm <file_name.json>
+        ```
+    - Please take a look at the sample output log file in [formated_backend_health.json](./week1_homework/health_check/formatted_frontend_health.json)
+

@@ -10,7 +10,7 @@ services:
     volumes:
       - ./backend-flask:/backend-flask
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:4567/api/activities/home || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:4567/api/activities/home || exit 1", "curl -f https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}/api/activities/home || exit 1"]
       interval: 1m30s
       timeout: 30s
       retries: 5
@@ -24,7 +24,7 @@ services:
     volumes:
       - ./frontend-react-js:/frontend-react-js
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1", "curl -f https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}/ || exit 1"]
       interval: 1m30s
       timeout: 30s
       retries: 5
