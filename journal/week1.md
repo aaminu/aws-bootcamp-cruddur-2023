@@ -185,3 +185,60 @@
         ```
     - Please take a look at the sample output log file in [formated_backend_health.json](./week1_homework/health_check/formatted_frontend_health.json)
 
+4. Installing Docker on local machine and running same containers running outside of Gitpod
+    - Followed the official instructions for installing a docker engine on ubuntu located [here](https://docs.docker.com/engine/install/ubuntu/):
+
+        ![dockerinstal](./images/dockerinstal.png)
+    
+    - Cloned my github repo, and renamed it to local-aws-bootcamp-cruddur-2023
+
+    - Installed the required dependency in the necessary folder by taking a look in the gitpod.yaml file.
+
+    - Inspected the  docker-compose file, made changes to the enivromental variables since everything would be run on my local machine. Please see below for effected changes
+        ```yaml
+        version: "3.8"
+        services:
+        backend-flask:
+            environment:
+            FRONTEND_URL: "*" 
+            BACKEND_URL: "*"
+            build: ./backend-flask
+            ports:
+            - "4567:4567"
+            volumes:
+            - ./backend-flask:/backend-flask
+            healthcheck:
+            test: ["CMD-SHELL", "curl -f http://localhost:4567/api/activities/home || exit 1"]
+            interval: 1m30s
+            timeout: 30s
+            retries: 5
+            start_period: 30s
+        frontend-react-js:
+            environment:
+            REACT_APP_BACKEND_URL: http://localhost:4567 #Backend url would be available via localhost exposed port 4567
+            build: ./frontend-react-js
+            ports:
+            - "3000:3000"
+            volumes:
+            - ./frontend-react-js:/frontend-react-js
+            healthcheck:
+            test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"]
+            interval: 1m30s
+            timeout: 30s
+            retries: 5
+            start_period: 
+        ```
+
+    - After the required modification, running the Compose Up command started the build process. Please see image below for running application
+        Local compose:
+
+        ![local compose](./images/composeup.png)
+
+        Landing Page:
+
+        ![landing page](./images/localpage.png)
+
+        Health Status:
+
+        ![local health staus](./images/localhealth.png)
+
