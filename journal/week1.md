@@ -242,3 +242,42 @@
 
         ![local health staus](./images/localhealth.png)
 
+5. Launching an AWS EC2 instance, installing docker and running a docker image:
+
+    - Logged into an aws console with a non-root account with required permission
+    - From the console, navigated to EC2 service page. Once on the page, I tried lauching an instance.
+    - On the pop up from above, I inputted all the correct/required details which included:
+        - Name of instance
+        -correct image to use (AMI Linux 2)
+        - Enabled SSH for my IP address
+        -Created a key pair for accessing my instance via SSH and downloaded it onto my computer
+        - In the advance tab, I used a copied a custom script into the user data field. The script install docker during the startup phase of the instance. Content of the script is shown below:
+            ```txt
+            #!/bin/bash
+            sudo yum update -y
+            sudo amazon-linux-extras install docker
+            sudo service docker start
+            sudo systemctl enable docker
+            sudo usermod -a -G docker ec2-
+            ```
+        - Finally launched the instance and waited till the status changed from initializing.
+    - On my computer, I navigated to the location of my key pair from the terminal, and issued:
+        ``` bash 
+        $ sudo ssh -i < keyname > ec2-user@< instance_public_address > 
+        ```
+        This connected me to my ec2 instance. Please see image below:
+
+        ![ssh-ing](./images/ec2Docker.png)
+
+        The above image also shows docker has been installed after the command *docker info* was issued.
+    
+    - To futher test docker, the ``` docker run hello-world ``` was issued and the result displayed below:
+
+        ![ec2 docker hello](./images/ec2Hello.png)     
+
+    - It was time to finally test pulling the image I publish to Dockerhub and running the said image. Please see image below;
+
+        ![ec2 docker pull](./images/dockerpull.png)
+
+    - Finally running the image and checking if I could get an ouput yielded the successful image shown below:
+        ![ec2 docker run](./images/ec2dockerrunning.png)
