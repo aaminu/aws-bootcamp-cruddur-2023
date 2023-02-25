@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  pico:
+    container_name: pico-dev-container
+    build: .
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    ports:
+      - "5000:5000"
+    
+    # Remember to change the volume directory to your project directory. The default directory on the container is /home/pico_user/
+    volumes:
+      - ./hello_world:/home/pico_user/hello_world

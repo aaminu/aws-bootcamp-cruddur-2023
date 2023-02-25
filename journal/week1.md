@@ -251,7 +251,7 @@
         -correct image to use (AMI Linux 2)
         - Enabled SSH for my IP address
         -Created a key pair for accessing my instance via SSH and downloaded it onto my computer
-        - In the advance tab, I used a copied a custom script into the user data field. The script install docker during the startup phase of the instance. Content of the script is shown below:
+        - In the advance tab, I used a copied a custom script into the user data field. The script install docker during the startup phase of the instance. Content of the [script](./week1_homework/AWS_EC2/bash_script.txt) is shown below:
             ```txt
             #!/bin/bash
             sudo yum update -y
@@ -281,3 +281,77 @@
 
     - Finally running the image and checking if I could get an ouput yielded the successful image shown below:
         ![ec2 docker run](./images/ec2dockerrunning.png)
+
+6. MULTISTAGE BUILD IN DOCKER FILE
+    - To test this approach, I decided to build a container that helps me setup a development enviroment for raspberry-pi pico/RP2040 chips. 
+
+    - Created folder in [journal/week1_homework](./week1_homework/) called [multistage_build](./week1_homework/multistage_build/)
+    
+    - Next, created a docker file
+        ```docker
+        FROM debian:10-slim AS basecontainer
+        RUN apt-get update && apt-get upgrade --yes && apt-get install sudo apt-utils python3 --yes
+
+
+        FROM basecontainer AS buildtool
+        RUN sudo apt-get update && sudo apt-get install git build-essential cmake --yes
+        RUN sudo apt-get install gcc-arm-none-eabi \
+                                libnewlib-arm-none-eabi \
+                                libstdc++-arm-none-eabi-newlib --yes
+
+
+        FROM buildtool AS sdkgetter
+        RUN adduser pico_user
+        USER pico_user
+        WORKDIR /home/pico_user
+        RUN git clone https://github.com/raspberrypi/pico-sdk.git --branch master && cd pico-sdk && git submodule update --init
+
+
+        FROM sdkgetter
+        ENV PICO_SDK_PATH="/home/pico_user/pico-sdk"
+        EXPOSE 5000
+        ```
+    - While in the folder described above, ran ```docker build --pull --rm -f "./Dockerfile" -t pico-container . ```
+    
+    - This took a while. After it was done running, I attached a shell to inspect everything
+
+    - Next I created a [docker-compose.yaml](./week1_homework/multistage_build/docker-compose.yml) with content:
+        ``` yaml
+        version: "3.8"
+        services:
+        pico:
+            container_name: pico-dev-container
+            build: .
+            stdin_open: true # docker run -i
+            tty: true        # docker run -t
+            ports:
+            - "5000:5000"
+            
+            # Remember to change the volume directory to your project directory. The default directory on the container is /home/pico_user/
+            volumes:
+            - ./hello_world:/home/pico_user/hello_world
+        ```
+
+        Using Compose Up:
+
+        ![pico up](./images/Screenshot%20from%202023-02-25%2017-37-11.png)
+
+    - Commented the important part in the compose file especially the volume mounting, In the compose file, I used a sample hello world project.
+
+    - After making sure everything was set, I ran the compose up command
+
+        ![pico up](./images/Screenshot%20from%202023-02-25%2017-37-11.png)
+
+    - Since my intension was to develop in this container, I installed [Remote Development Extension Pack](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack) in VS Code.
+
+    - Followed the instructions to get it connected to my docker container. 
+
+    - Built the project and it was sucessful. Kindly see images 
+    
+    Preprocessing Project:
+
+    ![building](./images/pico-hello.png)
+
+    Building, Linking and Locating the Binaries:
+    
+    ![Linking](./images/linker.png)
