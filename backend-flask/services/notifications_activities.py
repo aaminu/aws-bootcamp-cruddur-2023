@@ -4,7 +4,7 @@ from aws_xray_sdk.core import xray_recorder
 class NotificationsActivities:
 
   def run():
-    with xray_recorder.capture('subsegment_name') as subsegment:
+    with xray_recorder.capture('notifications-sub') as subsegment:
       now = datetime.now(timezone.utc).astimezone()
 
       results = [{
@@ -37,6 +37,6 @@ class NotificationsActivities:
         'replies': []
       }
       ]
-      seg_dict = {"now": now.isoformat(), "result_len":len(results)}
-      subsegment.put_annotation('nofitications-annotations', seg_dict)
+      subsegment.put_annotation('notifications_now', now.isoformat())
+      subsegment.put_annotation('notif_result_length', len(results))
       return results
