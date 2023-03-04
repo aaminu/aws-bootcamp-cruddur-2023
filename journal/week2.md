@@ -1,7 +1,7 @@
 # Week 2 — Distributed Tracing
-## Required Homework
+## **Required Homework**
 
-### Distrbuted Tracing with Honeycomb
+### **Distrbuted Tracing with Honeycomb**
 1. Created a trial account at [honeycomb.io](https://ui.honeycomb.io/)
 2. Created a new enviroment and attained the api key
 3. Persisted the Api key to my gitpod enviroment by doing
@@ -63,7 +63,7 @@
     ![trace1](./images/trace1.png)
 
 
-### Distrbuted Tracing with AWS Xray
+### **Distrbuted Tracing with AWS Xray**
 1. To get started with aws-xray, the following was added to the [requirements.txt](../backend-flask/requirements.txt) file to ensure the necessary sdk was dowmnloaded:
     ```txt
     aws-xray-sdk
@@ -192,7 +192,7 @@
     }
     ```
 
-### Loggig with AWS CloudWatch
+### **Logging with AWS CloudWatch**
 1. As usual, added the required library/SDK to the [requirements.txt](../backend-flask/requirements.txt):
     ```txt
     watchtower
@@ -243,7 +243,7 @@
     ![log1](./images/log1.png)
 
 
-### Loggig with Rollbar
+### **Logging with Rollbar**
 1. Started by creating an account onnn [rollbar](https://rollbar.com), selected the right framework that for and copied the required api-key.
 
 2. Persisted the key in the gitpod enivorment with name *ROLLBAR_ACCESS_TOKEN*. I reopened a new workspace to ensure the all enviroment keys are present
@@ -306,34 +306,35 @@
     ![log2](./images/log2.png)
 
 
-## Homework Challenges 
+## **Homework Challenges** 
 
-### Instrumenting frontend-application to observe network latency between frontend and backend
-1. Researching on how to achieve the task, I realized that an addictional container has to initialized to act as the collector and forwarder to honeycomb. Please see the approach below:
+### **Instrumenting frontend-application to observe network latency between frontend and backend**
+1. Researching on how to achieve the task, I realized that an addictional container has to be initialized to act as the collector and forwarder to honeycomb. Please see the approach below:
+
     ![collector](./images/collector.png)
 
-2. To achieve this task, I chose to measure the latency of the homepage retrieving data from the API. The steps listed below is to enable others to follow along since I had to do a lot of debugging during the initial phase. 
+2. To achieve this task, I chose to measure the duration it takes the app to retrieving data for the homepage from the API. The steps listed below is to enable others to follow along since I had to do a lot of debugging during the initial phase. 
 
-3. Started by making modifications to the [.gitpod.yml](../.gitpod.yml) file. The task *np,-init* as modified to include the required node modules, this is show below
-    ```yaml
-    tasks:
-        # Other Task....
-        - name: npm-init
-            init: |
-            cd /workspace/aws-bootcamp-cruddur-2023/frontend-react-js
-            npm i --save \
-                @opentelemetry/api \
-                @opentelemetry/sdk-trace-web \
-                @opentelemetry/exporter-trace-otlp-http \
-                @opentelemetry/instrumentation-document-load \
-                @opentelemetry/context-zone
+3. Started by making modifications to the [.gitpod.yml](../.gitpod.yml) file. The task *npm-init* was modified to include the required node modules, this is shown below
+```yaml
+tasks:
+    # Other Task....
+    - name: npm-init
+        init: |
+        cd /workspace/aws-bootcamp-cruddur-2023/frontend-react-js
+        npm i --save \
+            @opentelemetry/api \
+            @opentelemetry/sdk-trace-web \
+            @opentelemetry/exporter-trace-otlp-http \
+            @opentelemetry/instrumentation-document-load \
+            @opentelemetry/context-zone
 
-    ports:
-        # other ports...
-        - port: 4318
-            name: otel-collector
-            visibility: public
-    ```
+ports:
+    # other ports...
+    - port: 4318
+        name: otel-collector
+        visibility: public
+```
 
 4. Next was to update the [docker-compose](../docker-compose.yml) file with the container required for the opentelemetry collector and also enviroment keys for the frontend application:
 ```yaml
@@ -388,7 +389,7 @@ service:
       processors: [batch]
       exporters: [otlp]
 ```
-6. In the [/frontend/src/](../frontend-react-js/src/) directory, I created a [tracing.js](../frontend-react-js/src/tracing.js) file to allow for the initialization of the components, the contents of the file is shown below:
+6. In the [/frontend/src/](../frontend-react-js/src/) directory, I created a [tracing.js](../frontend-react-js/src/tracing.js) file to allow for initialization of the components, the contents of the file is shown below:
 ```js
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { WebTracerProvider, BatchSpanProcessor } from '@opentelemetry/sdk-trace-web';
@@ -418,7 +419,7 @@ provider.register({
 // this import is the first line in the file
 import './tracing.js'
 ```
-8. Next step was to created the custom span fro measuring latency in the home page. For this, the following was added to the [HomeFeedPage.js](../frontend-react-js/src/pages/HomeFeedPage.js) (Please see the comments to see what was added):
+8. Next step was to create the custom span fro measuring latency in the home page. For this, the following was added to the [HomeFeedPage.js](../frontend-react-js/src/pages/HomeFeedPage.js) (Please see the comments to see what was added):
 ```js
 //Initial imports...
 
@@ -456,7 +457,7 @@ export default function HomeFeedPage() {
         });
       } else {
         console.log(res)
-        // same as above but for item
+        // same as above but for when the response isnt a success
         tracer.startActiveSpan('HomeFeedPageLoadSpan', hmfSpan => {
           hmfSpan.setAttribute('homeeFeedPage.latency_MS', (endTime - startTime));
           hmfSpan.setAttribute('homeeFeedPage.status', false);
@@ -481,3 +482,114 @@ export default function HomeFeedPage() {
     ![span2](./images/HomeFeedPageSpan2.png)
 
     ![span3](./images/HomeFeedPageSpan3.png)
+
+    ![Latency2](./images/APILat.png)
+
+
+
+### **Adding Custom Span to capture UserID and creating custom queries**
+1. In the [backend/services](../backend-flask/services/) folder, the [user_activities.py](../backend-flask/services/user_activities.py) file was modified to capture the UserID used for searching for a user activities:
+```python
+from datetime import datetime, timedelta, timezone
+from opentelemetry import trace
+
+tracer = trace.get_tracer("user-activities")
+
+class UserActivities:
+  def run(user_handle):
+    with tracer.start_as_current_span("user-data-activities"): # start a new custom spam called user-data
+      span = trace.get_current_span()
+      model = {
+        'errors': None,
+        'data': None
+      }
+
+      now = datetime.now(timezone.utc).astimezone()
+      span.set_attribute("user.now", now.isoformat())
+
+      if user_handle == None or len(user_handle) < 1:
+        model['errors'] = ['blank_user_handle']
+      else:
+        now = datetime.now()
+        span.set_attribute("user.now", now.isoformat() # capture the time
+        span.set_attribute("UserID", user_handle) # capture the user id
+        results = [{
+          'uuid': '248959df-3079-4947-b847-9e0892d1bab4',
+          'handle':  'Andrew Brown',
+          'message': 'Cloud is fun!',
+          'created_at': (now - timedelta(days=1)).isoformat(),
+          'expires_at': (now + timedelta(days=31)).isoformat()
+        }]
+        span.set_attribute("user.activities.len", len(result)) # capture the number of active user activities 
+        model['data'] = results
+      return model
+```
+2. Result from instrumenting the user activities can be seen below:
+  ![UserID](./images/userID.png)
+
+3. After using loading different user activities, a P90 query on the duration(ms) grouped by UserID was run to show the latency of opening the each user activities:
+  ![Latency1](./images/LatencyUserID.png)
+
+4. A count query was also performed for the frontend Homepage API call to indicate where the duration was less or equal to 500ms:
+  ![Latency2](./images/APILat.png)
+
+5. Lastly, saved the queries for later use:
+  ![Saved](./images/Saved%20Queries.png)
+
+
+### **Adding Custom Subsegment for AWS_XRAY**
+1. To keep an eye on the cost, I only implemented a simple subgement in the [notifications_activities.py](../backend-flask/services/notifications_activities.py) file. To achieve this, I didn't have to make any change to the [app.py](../backend-flask/app.py) file except what was described in the previous xray chapter. The content added to the notifications file is:
+```python
+from datetime import datetime, timedelta, timezone
+from aws_xray_sdk.core import xray_recorder
+
+class NotificationsActivities:
+
+  def run():
+    with xray_recorder.capture('notifications-sub') as subsegment: # start a capture session with context manager
+      now = datetime.now(timezone.utc).astimezone()
+
+      results = [{
+        'uuid': '68f126b0-1ceb-4a33-88be-d90fa7109eee',
+        'handle':  'aaminu',
+        'message': 'I am finding #cloudcamp fun. :)'`
+        'created_at': (now - timedelta(days=2)).isoformat(),
+        'expires_at': (now + timedelta(days=5)).isoformat(),
+        'likes_count': 5,
+        'replies_count': 1,
+        'reposts_count': 0,
+        'replies': [{
+          'uuid': '26e12864-1c26-5c3a-9658-97a10f8fea67',
+          'reply_to_activity_uuid': '68f126b0-1ceb-4a33-88be-d90fa7109eee',
+          'handle':  'Worf',
+          'message': 'This is the post!',
+          'likes_count': 0,
+          'replies_count': 0,
+          'reposts_count': 0,
+          'created_at': (now - timedelta(days=2)).isoformat()
+        }],
+      },
+      {
+        'uuid': '66e12864-8c26-4c3a-9658-95a10f8fea67',
+        'handle':  'lim<3',
+        'message': 'Hey aaminu, what\'s good?',
+        'created_at': (now - timedelta(days=7)).isoformat(),
+        'expires_at': (now + timedelta(days=9)).isoformat(),
+        'likes': 0,
+        'replies': []
+      }
+      ]
+      subsegment.put_annotation('notifications_now', now.isoformat()) # Add Annotations
+      subsegment.put_annotation('notif_result_length', len(results))  # Add Annotations
+      return results
+``` 
+
+2. In aws console, the traces from doing a custom instrumentation in the [notifications_activities.py](../backend-flask/services/notifications_activities.py) file can be seen below. The subsegment name and annotation matches what was set in the file:
+
+  ![notif.sub](./images/nofit-sub.png)
+
+  ![annotation](./images/Annotations.png)
+
+3. The raw json output of the custom subsegment from the backend trace is also shown below:
+
+  ![jsonout](./images/RawJson.png)
