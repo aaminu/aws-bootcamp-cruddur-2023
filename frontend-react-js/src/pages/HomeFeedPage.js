@@ -10,6 +10,10 @@ import ReplyForm from '../components/ReplyForm';
 // [TODO] Authenication
 import Cookies from 'js-cookie'
 
+//Honeycomb Tracing
+import { trace, context, } from '@opentelemetry/api';
+const tracer = trace.getTracer();
+
 export default function HomeFeedPage() {
   const [activities, setActivities] = React.useState([]);
   const [popped, setPopped] = React.useState(false);
@@ -21,14 +25,29 @@ export default function HomeFeedPage() {
   const loadData = async () => {
     try {
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`
+      var startTime = performance.now()
       const res = await fetch(backend_url, {
         method: "GET"
       });
+      var endTime = performance.now()
+
       let resJson = await res.json();
       if (res.status === 200) {
         setActivities(resJson)
+        tracer.startActiveSpan('HomeFeedPageLoadSpan', hmfSpan => {
+          // Add your attributes to describe the button clicked here
+          hmfSpan.setAttribute('homeeFeedPage.latency_MS', (endTime - startTime));
+          hmfSpan.setAttribute('homeeFeedPage.status', true);
+          hmfSpan.end();
+        });
       } else {
         console.log(res)
+        tracer.startActiveSpan('HomeFeedPageLoadSpan', hmfSpan => {
+          // Add your attributes to describe the button clicked here
+          hmfSpan.setAttribute('homeeFeedPage.latency_MS', (endTime - startTime));
+          hmfSpan.setAttribute('homeeFeedPage.status', false);
+          hmfSpan.end();
+        });
       }
     } catch (err) {
       console.log(err);
