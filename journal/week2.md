@@ -62,8 +62,6 @@
 9. Below is a proof of trace in honeycomb platform.
     ![trace1](./images/trace1.png)
 
-    ![trace2](./images/trace2.png)
-
 
 ### Distrbuted Tracing with AWS Xray
 1. To get started with aws-xray, the following was added to the [requirements.txt](../backend-flask/requirements.txt) file to ensure the necessary sdk was dowmnloaded:
@@ -370,8 +368,9 @@ receivers:
     protocols:
       http:
         cors:
-          allowed_origins:
-            - "https://3000-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
+          allowed_origins: #Only way I got the CORS error to dissappear
+            - https://*
+            - http://*
 
 processors:
   batch:
@@ -393,7 +392,6 @@ service:
 ```js
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { WebTracerProvider, BatchSpanProcessor } from '@opentelemetry/sdk-trace-web';
-import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { Resource }  from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
@@ -407,19 +405,12 @@ const exporter = new OTLPTraceExporter({
 });
 const provider = new WebTracerProvider({
   resource: new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: 'frontend-react-js',  
+    [SemanticResourceAttributes.SERVICE_NAME]: 'frontend-react-js',
   }),
 });
 provider.addSpanProcessor(new BatchSpanProcessor(exporter));
 provider.register({
   contextManager: new ZoneContextManager()
-});
-
-// Kindly ignore this if you arent interested in loadtimes of js file, css-files etc
-registerInstrumentations({
-  instrumentations: [
-    new DocumentLoadInstrumentation(),
-  ],
 });
 ```
 7. I then imported this file into the entry point of react app which is [index.js](../frontend-react-js/src/index.js):
@@ -484,4 +475,9 @@ export default function HomeFeedPage() {
 10. Moment of truth: Ensure all installs are completed before doing compose up. After compose up, check that all the ports are open especially the *otel container*
 
 11. Open the frontend homepage and refresh a couple of times. Head over to honeycomb and check your traces/spans. Kindly see some of the results below:
+    
+    ![span1](./images/HomeFeedPageSpan31.png)
 
+    ![span2](./images/HomeFeedPageSpan2.png)
+
+    ![span3](./images/HomeFeedPageSpan3.png)
