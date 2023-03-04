@@ -1,0 +1,24 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        cors:
+          allowed_origins:
+            - http://*.gitpo.io
+            - https://*.gitpo.io
+
+processors:
+  batch:
+
+exporters:
+  otlp:
+    endpoint: "api.honeycomb.io:443"
+    headers:
+      "x-honeycomb-team": "${HONEYCOMB_API_KEY}"
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp]

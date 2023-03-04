@@ -27,7 +27,8 @@ services:
   frontend-react-js:
     environment:
       REACT_APP_BACKEND_URL: "https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
-      OTEL_EXPORT_URL: "https://4318-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
+      REACT_APP_FRONTEND_URL: "https://3000-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
+      REACT_APP_OLTP_URL: "https://4318-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
     build: ./frontend-react-js
     ports:
       - "3000:3000"
@@ -45,7 +46,7 @@ services:
       HONEYCOMB_API_KEY: "${HONEYCOMB_API_KEY}"
     command: [--config=/etc/otel-collector-config.yaml]
     volumes:
-      - ./otel_collector_config.yaml:/etc/otel-collector-config.yaml
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
     ports:
       - 14268:14268
       - 4318:4318
