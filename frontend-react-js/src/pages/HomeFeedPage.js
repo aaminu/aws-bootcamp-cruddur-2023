@@ -35,7 +35,7 @@ export default function HomeFeedPage() {
       if (res.status === 200) {
         setActivities(resJson)
         tracer.startActiveSpan('HomeFeedPageLoadSpan', hmfSpan => {
-          // Add your attributes to describe the button clicked here
+          // Add attributes to custom span
           hmfSpan.setAttribute('homeeFeedPage.latency_MS', (endTime - startTime));
           hmfSpan.setAttribute('homeeFeedPage.status', true);
           hmfSpan.end();
@@ -43,7 +43,7 @@ export default function HomeFeedPage() {
       } else {
         console.log(res)
         tracer.startActiveSpan('HomeFeedPageLoadSpan', hmfSpan => {
-          // Add your attributes to describe the button clicked here
+          // Add attributes to custom span
           hmfSpan.setAttribute('homeeFeedPage.latency_MS', (endTime - startTime));
           hmfSpan.setAttribute('homeeFeedPage.status', false);
           hmfSpan.end();

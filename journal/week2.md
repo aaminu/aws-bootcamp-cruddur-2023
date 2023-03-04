@@ -22,13 +22,13 @@
     ````yaml
     version: "3.8"
     services:
-    backend-flask:
-        environment:
-        ...
-        ...
-        OTEL_SERVICE_NAME: "backend-flask"
-        OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io"
-        OTEL_EXPORTER_OTLP_HEADERS: "x-honeycomb-team=${HONEYCOMB_API_KEY}"
+        backend-flask:
+            environment:
+                ...
+                ...
+                OTEL_SERVICE_NAME: "backend-flask"
+                OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io"
+                OTEL_EXPORTER_OTLP_HEADERS: "x-honeycomb-team=${HONEYCOMB_API_KEY}"
         ...
     ```
 7. Next, to start getting traces in honeycomb, I added the following to the [app.py](../backend-flask/app.py):
@@ -74,23 +74,23 @@
     ```yaml
     version: "3.8"
     services:
-    backend-flask:
-        environment:
-        ...
-        AWS_XRAY_URL: "*4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}*"
-        AWS_XRAY_DAEMON_ADDRESS: "xray-daemon:2000"
+        backend-flask:
+            environment:
+                ...
+                AWS_XRAY_URL: "*4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}*"
+                AWS_XRAY_DAEMON_ADDRESS: "xray-daemon:2000"
               
         ...
-    xray-daemon:
-        image: "amazon/aws-xray-daemon"
-        environment:
-        AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
-        AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
-        AWS_REGION: "us-east-1"
-        command:
-        - "xray -o -b xray-daemon:2000"
-        ports:
-        - 2000:2000/udp
+        xray-daemon:
+            image: "amazon/aws-xray-daemon"
+            environment:
+                AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+                AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+                AWS_REGION: "us-east-1"
+            command:
+                - "xray -o -b xray-daemon:2000"
+            ports:
+                - 2000:2000/udp
     ```
 3. The above sets the required enviroment variables and also defines the conntainer for the xray-daemon.
 4. Next was to create a group on aws-xray to ensure we could group our traces. The following command as issued in the terminal since aws cli is already installed:
@@ -193,6 +193,7 @@
         ]
     }
     ```
+
 ### Loggig with AWS CloudWatch
 1. As usual, added the required library/SDK to the [requirements.txt](../backend-flask/requirements.txt):
     ```txt
@@ -202,12 +203,12 @@
     ```yaml
     version: "3.8"
     services:
-    backend-flask:
-        environment:
-        ...
-        AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
-        AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
-        AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+        backend-flask:
+            environment:
+                ...
+                AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
+                AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+                AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
               
         ...
     ```
@@ -308,3 +309,179 @@
 
 
 ## Homework Challenges 
+
+### Instrumenting frontend-application to observe network latency between frontend and backend
+1. Researching on how to achieve the task, I realized that an addictional container has to initialized to act as the collector and forwarder to honeycomb. Please see the approach below:
+    ![collector](./images/collector.png)
+
+2. To achieve this task, I chose to measure the latency of the homepage retrieving data from the API. The steps listed below is to enable others to follow along since I had to do a lot of debugging during the initial phase. 
+
+3. Started by making modifications to the [.gitpod.yml](../.gitpod.yml) file. The task *np,-init* as modified to include the required node modules, this is show below
+    ```yaml
+    tasks:
+        # Other Task....
+        - name: npm-init
+            init: |
+            cd /workspace/aws-bootcamp-cruddur-2023/frontend-react-js
+            npm i --save \
+                @opentelemetry/api \
+                @opentelemetry/sdk-trace-web \
+                @opentelemetry/exporter-trace-otlp-http \
+                @opentelemetry/instrumentation-document-load \
+                @opentelemetry/context-zone
+
+    ports:
+        # other ports...
+        - port: 4318
+            name: otel-collector
+            visibility: public
+    ```
+
+4. Next was to update the [docker-compose](../docker-compose.yml) file with the container required for the opentelemetry collector and also enviroment keys for the frontend application:
+```yaml
+version: "3.8"
+services:
+  # Other services
+  frontend-react-js:
+    environment:
+      REACT_APP_BACKEND_URL: "https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
+      REACT_APP_OLTP_URL: "https://4318-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}" # Opentelemetry collector service address
+    build: ./frontend-react-js
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend-react-js:/frontend-react-js
+  #opentelemetry container
+  otel-collector:
+    image: "otel/opentelemetry-collector"
+    environment:
+      HONEYCOMB_API_KEY: "${HONEYCOMB_API_KEY}" # Same honeycomb api key used in the backend enviroment
+    command: [--config=/etc/otel-collector-config.yaml]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - 14268:14268
+      - 4318:4318
+```
+5. Created the config file indicated as the volume to be mounted for the *otel-collector* service from above. This file location is the same as the docker-compose file location. The content of the file is: 
+```yaml
+receivers:
+  otlp:
+    protocols:
+      http:
+        cors:
+          allowed_origins:
+            - "https://3000-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
+
+processors:
+  batch:
+
+exporters:
+  otlp:
+    endpoint: "api.honeycomb.io:443"
+    headers:
+      "x-honeycomb-team": "${HONEYCOMB_API_KEY}"
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp]
+```
+6. In the [/frontend/src/](../frontend-react-js/src/) directory, I created a [tracing.js](../frontend-react-js/src/tracing.js) file to allow for the initialization of the components, the contents of the file is shown below:
+```js
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { WebTracerProvider, BatchSpanProcessor } from '@opentelemetry/sdk-trace-web';
+import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load';
+import { ZoneContextManager } from '@opentelemetry/context-zone';
+import { Resource }  from '@opentelemetry/resources';
+import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+
+const exporter = new OTLPTraceExporter({
+  url: `${process.env.REACT_APP_OLTP_URL}/v1/traces`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  
+});
+const provider = new WebTracerProvider({
+  resource: new Resource({
+    [SemanticResourceAttributes.SERVICE_NAME]: 'frontend-react-js',  
+  }),
+});
+provider.addSpanProcessor(new BatchSpanProcessor(exporter));
+provider.register({
+  contextManager: new ZoneContextManager()
+});
+
+// Kindly ignore this if you arent interested in loadtimes of js file, css-files etc
+registerInstrumentations({
+  instrumentations: [
+    new DocumentLoadInstrumentation(),
+  ],
+});
+```
+7. I then imported this file into the entry point of react app which is [index.js](../frontend-react-js/src/index.js):
+```js
+// this import is the first line in the file
+import './tracing.js'
+```
+8. Next step was to created the custom span fro measuring latency in the home page. For this, the following was added to the [HomeFeedPage.js](../frontend-react-js/src/pages/HomeFeedPage.js) (Please see the comments to see what was added):
+```js
+//Initial imports...
+
+
+//Honeycomb Tracing
+import { trace, context, } from '@opentelemetry/api';
+const tracer = trace.getTracer();
+
+export default function HomeFeedPage() {
+  const [activities, setActivities] = React.useState([]);
+  const [popped, setPopped] = React.useState(false);
+  const [poppedReply, setPoppedReply] = React.useState(false);
+  const [replyActivity, setReplyActivity] = React.useState({});
+  const [user, setUser] = React.useState(null);
+  const dataFetchedRef = React.useRef(false);
+
+  const loadData = async () => {
+    try {
+      const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`
+      var startTime = performance.now() //capture start time
+      const res = await fetch(backend_url, {
+        method: "GET"
+      });
+      var endTime = performance.now() //capture when result was returned
+
+      let resJson = await res.json();
+      if (res.status === 200) {
+        setActivities(resJson)
+        //Start custom span
+        tracer.startActiveSpan('HomeFeedPageLoadSpan', hmfSpan => {
+          // Add attributes to custom span
+          hmfSpan.setAttribute('homeeFeedPage.latency_MS', (endTime - startTime)); //Latency in milliseconds
+          hmfSpan.setAttribute('homeeFeedPage.status', true); //status of the item retrieved
+          hmfSpan.end();
+        });
+      } else {
+        console.log(res)
+        // same as above but for item
+        tracer.startActiveSpan('HomeFeedPageLoadSpan', hmfSpan => {
+          hmfSpan.setAttribute('homeeFeedPage.latency_MS', (endTime - startTime));
+          hmfSpan.setAttribute('homeeFeedPage.status', false);
+          hmfSpan.end();
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+//..... The remaining code
+```
+9. If you are followig along, you might want to commit and push your code to github. After pushing,  close the current workspace and open a fresh one. This would allow all the correct enviroment variable and downloads initiated by gitpod to be carried out.
+
+10. Moment of truth: Ensure all installs are completed before doing compose up. After compose up, check that all the ports are open especially the *otel container*
+
+11. Open the frontend homepage and refresh a couple of times. Head over to honeycomb and check your traces/spans. Kindly see some of the results below:
+

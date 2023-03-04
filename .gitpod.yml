@@ -31,6 +31,9 @@ ports:
   - port: 4567
     name: Backend-flask
     visibility: public
+  - port: 4318
+    name: otel-collector
+    visibility: public
 
 vscode:
   extensions:

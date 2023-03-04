@@ -4,8 +4,7 @@ receivers:
       http:
         cors:
           allowed_origins:
-            - http://*.gitpo.io
-            - https://*.gitpo.io
+            - "https://3000-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
 
 processors:
   batch:
