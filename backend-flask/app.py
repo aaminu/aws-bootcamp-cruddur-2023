@@ -14,6 +14,8 @@ from services.messages import *
 from services.create_message import *
 from services.show_activity import *
 
+from lib.cognito_jwt_token import TokenVerifyError, CognitoJwtToken
+
 #Rollbar
 import rollbar
 import rollbar.contrib.flask
@@ -61,6 +63,13 @@ tracer = trace.get_tracer(__name__)
 # LOGGER.info("Test Message")
 
 app = Flask(__name__)
+
+#JWT Token
+cognito_jwt_token = CognitoJwtToken(
+                          user_pool_id = os.getenv("AWS_COGNITO_USER_POOLS_ID"), 
+                          user_pool_client_id = os.getenv("AWS_COGNITO_CLIENT_ID"), 
+                          region = os.getenv("AWS_DEFAULT_REGION")
+                          )
 
 # Initialize automatic instrumentation with Flask
 FlaskInstrumentor().instrument_app(app)
@@ -146,9 +155,21 @@ def data_create_message():
 
 @app.route("/api/activities/home", methods=['GET'])
 def data_home():
-  app.logger.info("AUTH HEADER")
-  app.logger.info(request.headers.get('Authorization'))
-  data = HomeActivities.run()
+  access_token = cognito_jwt_token.extract_access_token(request.headers)
+  if access_token == "null": #empty accesstoken
+    data = HomeActivities.run()
+    return data, 200
+
+  try:
+    cognito_jwt_token.verify(access_token)
+    app.logger.debug("Authenicated")
+    app.logger.debug(f"User: {cognito_jwt_token.claims['username']}")
+    data = HomeActivities.run(cognito_user=cognito_jwt_token.claims['username'])
+  except TokenVerifyError as e:
+    app.logger.debug("Authentication Failed")
+    app.logger.debug(e)
+    data = HomeActivities.run()
+
   return data, 200
 
 @app.route("/api/activities/notifications", methods=['GET'])
