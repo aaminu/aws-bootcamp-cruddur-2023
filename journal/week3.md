@@ -109,7 +109,7 @@ Amplify.configure({
 //...
 ```
 8. To also customize the home-feed page based on authenticated user, the following modifications were made to the [HomeFeedPage.js](../frontend-react-js/src/pages/HomeFeedPage.js):
-    - Import aws-amplify
+    - Imported aws-amplify
     ```js
     import './HomeFeedPage.css';
     import React from "react";
@@ -144,11 +144,11 @@ Amplify.configure({
     };
     ```
 9. To enable signing in with a cognito username, the following modifiications were made to the [SigninPage.js](../frontend-react-js/src/pages/SigninPage.js) file:
-    - Replace the import underneath the *// [TODO] Authenication* with:
+    - Replaced the import underneath the *// [TODO] Authenication* with:
     ```js
     import { Auth } from 'aws-amplify';
     ```
-    - Replace the *onSubmit* method/function with:
+    - Replaced the *onSubmit* method/function with:
     ```js
     const onsubmit = async (event) => {
      event.preventDefault();
@@ -186,13 +186,163 @@ Amplify.configure({
 
 11. At this point, I committed the code and pushed to Github. Closed the current workspace and opened a totally new one. This approach ensures that all environment keys propagate properly.
 
-**NB:** To test the above, one need to create a user using clickops on aws-cognito page underneath the user pool created. Also, we need to use the aws-cli to confirm the user i.e. verification. The command to that is:
+**NB:** To test the above, one need to create a user using clickops on aws-cognito page underneath the user pool created. Also, we need to use the aws-cli to set a password with admin rights so as to avoid verification. The command to do that is:
 ```bash
 $ aws cognito-idp admin-set-user-password \
-> --user-pool-id <your-user-pool-id> \
-> --username <username> \
-> --password <password> \
-> --permanent
+ --user-pool-id <your-user-pool-id> \
+ --username <username> \
+ --password <password> \
+ --permanent
 ```
+Or if you like the CLI like me, you can use the following command to register and confirm the user
+```bash
+ $ aws cognito-idp sign-up \
+  --client-id <your-client-id> \
+  --username <email-address> \
+  --password <PASSWORD> \
+  --user-attributes Name="email",Value=<email-address> Name="name",Value=<your-name> Name="preferred_username",Value=<preferred-username>
+```
+And to confirm after receiving an email
+```bash
+ $ aws cognito-idp confirm-sign-up \
+  --client-id <your-client-id> \
+  --username <email-address> \
+  --confirmation-code <Confirmation-Code>
+```
+See below for picture evidence using the above:
+- Registering a user:
+
+  ![regUser](./images/register_user1.png)
+
+- Unconfirmed user in Cognito:
+
+  ![uncon](./images/unconfirmed.png)
+
+- Verfication email:
+
+  ![verif](./images/confirmation%20code.png)
+
+- Confirmation via cli:
+
+  ![](./images/confirm.png)
+  ![](./images/confirm2.png)
+
+- Logged-in user
+
+  ![](./images/logged.png)
+
 
 ### **Implementing Custom Signup, Confirmation, and Recovery Page**
+Similar to the previous section, I added the auth library to the respective sections as per instruction:
+1. In the [SignupPage.js](../frontend-react-js/src/pages/SignupPage.js) file, 
+  - I replaced the cookies import and the onSubmit method:
+  ```
+  //other imports
+
+  //Authenication
+  import { Auth } from 'aws-amplify';
+  ```
+  - Replaced the onSubmit method:
+  ```js
+  //other imports
+
+  const onsubmit = async (event) => {
+    event.preventDefault();
+    setErrors('')
+    try {
+        const { user } = await Auth.signUp({
+          username: email,
+          password: password,
+          attributes: {
+            name: name,
+            email: email,
+            preferred_username: username,
+          },
+          autoSignIn: { // optional - enables auto sign in after user is confirmed
+            enabled: true,
+          }
+        });
+        console.log(user);
+        window.location.href = `/confirm?email=${email}`
+    } catch (error) {
+        console.log(error);
+        setErrors(error.message)
+    }
+    return false
+  }
+  ```
+2. In the [ConfirmationPage.js](../frontend-react-js/src/pages/ConfirmationPage.js) file: 
+  - I replaced the cookies import and the onSubmit method:
+  ```js
+  //other imports
+
+  //Authenication
+  import { Auth } from 'aws-amplify';
+  ```
+  - Replaced both resend-code and onSubmit methods:
+  ```js
+  const resend_code = async (event) => {
+    setErrors('')
+    try {
+      await Auth.resendSignUp(email);
+      console.log('code resent successfully');
+      setCodeSent(true)
+    } catch (err) {
+      console.log(err)
+      if (err.message == 'Username cannot be empty'){
+        setErrors("You need to provide an email in order to send Resend Activiation Code")   
+      } else if (err.message == "Username/client id combination not found."){
+        setErrors("Email is invalid or cannot be found.")   
+      }
+    }
+  }
+
+  const onsubmit = async (event) => {
+    event.preventDefault();
+    setErrors('')
+    try {
+      await Auth.confirmSignUp(email, code);
+      window.location.href = "/"
+    } catch (error) {
+      setErrors(error.message)
+    }
+    return false
+  }
+```
+3. Finally in the [RecoverPage.js](../frontend-react-js/src/pages/RecoverPage.js) file:
+  - Imported the auth library
+  ```js
+  //other imports
+  import { Auth } from 'aws-amplify';
+  ```
+  - Replaced the onsubmit_send_code and onsubmit_confirm_code methods:
+  ```js
+  const onsubmit_send_code = async (event) => {
+    event.preventDefault();
+    setErrors('')
+    Auth.forgotPassword(username)
+    .then((data) => setFormState('confirm_code') )
+    .catch((err) => setErrors(err.message) );
+    return false
+  }
+
+  const onsubmit_confirm_code = async (event) => {
+    event.preventDefault();
+    setErrors('')
+    if (password == passwordAgain){
+      Auth.forgotPasswordSubmit(username, code, password)
+      .then((data) => setFormState('success'))
+      .catch((err) => setErrors(err.message) );
+    } else {
+      setErrors('Passwords do not match')
+    }
+    return false
+  }
+```
+5. Test the above by registering a new user. Please see the gif below as evidence:
+
+    ![](./images/gif-log2.gif)
+
+6. Test for recovering password is shown below:
+
+    ![](./images/gif-log3.gif)
