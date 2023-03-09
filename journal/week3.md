@@ -186,7 +186,7 @@ Amplify.configure({
 
 11. At this point, I committed the code and pushed to Github. Closed the current workspace and opened a totally new one. This approach ensures that all environment keys propagate properly.
 
-**NB:** To test the above, one need to create a user using clickops on aws-cognito page underneath the user pool created. Also, we need to use the aws-cli to set a password with admin rights so as to avoid verification. The command to do that is:
+**NB:** To test the above, one needs to create a user using clickops on aws-cognito page underneath the user pool created. Also, we need to use the aws-cli to set a password with admin rights so as to avoid verification. The command to do that is:
 ```bash
 $ aws cognito-idp admin-set-user-password \
  --user-pool-id <your-user-pool-id> \
@@ -194,7 +194,7 @@ $ aws cognito-idp admin-set-user-password \
  --password <password> \
  --permanent
 ```
-Or if you like the CLI like me, you can use the following command to register and confirm the user
+Or if you like the cli like me, you can use the following command to register and confirm the user
 ```bash
  $ aws cognito-idp sign-up \
   --client-id <your-client-id> \
@@ -233,116 +233,253 @@ See below for picture evidence using the above:
 
 
 ### **Implementing Custom Signup, Confirmation, and Recovery Page**
+
 Similar to the previous section, I added the auth library to the respective sections as per instruction:
-1. In the [SignupPage.js](../frontend-react-js/src/pages/SignupPage.js) file, 
-  - I replaced the cookies import and the onSubmit method:
-  ```
-  //other imports
 
-  //Authenication
-  import { Auth } from 'aws-amplify';
-  ```
-  - Replaced the onSubmit method:
-  ```js
-  //other imports
+1. In the [SignupPage.js](../frontend-react-js/src/pages/SignupPage.js) file:
+    - I replaced the cookies import and the onSubmit method:
 
-  const onsubmit = async (event) => {
-    event.preventDefault();
-    setErrors('')
-    try {
-        const { user } = await Auth.signUp({
-          username: email,
-          password: password,
-          attributes: {
-            name: name,
-            email: email,
-            preferred_username: username,
-          },
-          autoSignIn: { // optional - enables auto sign in after user is confirmed
-            enabled: true,
-          }
-        });
-        console.log(user);
-        window.location.href = `/confirm?email=${email}`
-    } catch (error) {
-        console.log(error);
-        setErrors(error.message)
+    ```
+    //other imports
+
+    //Authenication
+    import { Auth } from 'aws-amplify';
+    ```
+    - Replaced the onSubmit method:
+    ```js
+    //other imports
+
+    const onsubmit = async (event) => {
+      event.preventDefault();
+      setErrors('')
+      try {
+          const { user } = await Auth.signUp({
+            username: email,
+            password: password,
+            attributes: {
+              name: name,
+              email: email,
+              preferred_username: username,
+            },
+            autoSignIn: { // optional - enables auto sign in after user is confirmed
+              enabled: true,
+            }
+          });
+          console.log(user);
+          window.location.href = `/confirm?email=${email}`
+      } catch (error) {
+          console.log(error);
+          setErrors(error.message)
+      }
+      return false
     }
-    return false
-  }
-  ```
+    ```
 2. In the [ConfirmationPage.js](../frontend-react-js/src/pages/ConfirmationPage.js) file: 
-  - I replaced the cookies import and the onSubmit method:
-  ```js
-  //other imports
+   - I replaced the cookies import and the onSubmit method:
+    ```js
+    //other imports
 
-  //Authenication
-  import { Auth } from 'aws-amplify';
-  ```
-  - Replaced both resend-code and onSubmit methods:
-  ```js
-  const resend_code = async (event) => {
-    setErrors('')
-    try {
-      await Auth.resendSignUp(email);
-      console.log('code resent successfully');
-      setCodeSent(true)
-    } catch (err) {
-      console.log(err)
-      if (err.message == 'Username cannot be empty'){
-        setErrors("You need to provide an email in order to send Resend Activiation Code")   
-      } else if (err.message == "Username/client id combination not found."){
-        setErrors("Email is invalid or cannot be found.")   
+    //Authenication
+    import { Auth } from 'aws-amplify';
+    ```
+    - Replaced both resend-code and onSubmit methods:
+    ```js
+    const resend_code = async (event) => {
+      setErrors('')
+      try {
+        await Auth.resendSignUp(email);
+        console.log('code resent successfully');
+        setCodeSent(true)
+      } catch (err) {
+        console.log(err)
+        if (err.message == 'Username cannot be empty'){
+          setErrors("You need to provide an email in order to send Resend Activiation Code")   
+        } else if (err.message == "Username/client id combination not found."){
+          setErrors("Email is invalid or cannot be found.")   
+        }
       }
     }
-  }
 
-  const onsubmit = async (event) => {
-    event.preventDefault();
-    setErrors('')
-    try {
-      await Auth.confirmSignUp(email, code);
-      window.location.href = "/"
-    } catch (error) {
-      setErrors(error.message)
+    const onsubmit = async (event) => {
+      event.preventDefault();
+      setErrors('')
+      try {
+        await Auth.confirmSignUp(email, code);
+        window.location.href = "/"
+      } catch (error) {
+        setErrors(error.message)
+      }
+      return false
     }
-    return false
-  }
-```
+    ```
+
 3. Finally in the [RecoverPage.js](../frontend-react-js/src/pages/RecoverPage.js) file:
-  - Imported the auth library
-  ```js
-  //other imports
-  import { Auth } from 'aws-amplify';
-  ```
-  - Replaced the onsubmit_send_code and onsubmit_confirm_code methods:
-  ```js
-  const onsubmit_send_code = async (event) => {
-    event.preventDefault();
-    setErrors('')
-    Auth.forgotPassword(username)
-    .then((data) => setFormState('confirm_code') )
-    .catch((err) => setErrors(err.message) );
-    return false
-  }
+    - Imported the auth library
 
-  const onsubmit_confirm_code = async (event) => {
-    event.preventDefault();
-    setErrors('')
-    if (password == passwordAgain){
-      Auth.forgotPasswordSubmit(username, code, password)
-      .then((data) => setFormState('success'))
+    ```js
+    //other imports
+    import { Auth } from 'aws-amplify';
+    ```
+
+    - Replaced the onsubmit_send_code and onsubmit_confirm_code methods:
+
+    ```js
+    const onsubmit_send_code = async (event) => {
+      event.preventDefault();
+      setErrors('')
+      Auth.forgotPassword(username)
+      .then((data) => setFormState('confirm_code') )
       .catch((err) => setErrors(err.message) );
-    } else {
-      setErrors('Passwords do not match')
+      return false
     }
-    return false
-  }
-```
-5. Test the above by registering a new user. Please see the gif below as evidence:
+
+    const onsubmit_confirm_code = async (event) => {
+      event.preventDefault();
+      setErrors('')
+      if (password == passwordAgain){
+        Auth.forgotPasswordSubmit(username, code, password)
+        .then((data) => setFormState('success'))
+        .catch((err) => setErrors(err.message) );
+      } else {
+        setErrors('Passwords do not match')
+      }
+      return false
+    }
+    ```
+
+4. Test the above by registering a new user. Please see the gif below as evidence:
 
     ![](./images/gif-log2.gif)
 
-6. Test for recovering password is shown below:
+5. Test for recovering password is shown below:
 
     ![](./images/gif-log3.gif)
+
+### **Cognito Backend Server Verify**
+This section contains work done to send the JWT to the backend server, verify it and render a provide a different Home timeline based on the outcome of the verification. Certain code chunks are different from the instructions in the video.
+
+1. To get the Homepage to include the JWT as part of it request header when talking to the backend server, the following was added to the  [HomeFeedPage.js](../frontend-react-js/src/pages/HomeFeedPage.js) file:
+
+    ```js
+    const loadData = async () => {
+        try {
+          const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`
+          var startTime = performance.now()
+          const res = await fetch(backend_url, {
+            headers: {
+              // ******Add JWT to request Header*******
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`
+            },
+            method: "GET"
+          });
+          // Other part of the method/function .....
+      };
+    ```
+2. In the [app.py](../backend-flask/app.py) file, changes to the *CORS* initialization is made to ensure communication isn't aborted due to cors. The following was added:
+    ```py
+    cors = CORS(
+      app, 
+      resources={r"/api/*": {"origins": origins}},
+      expose_headers="location,link",
+      allow_headers="content-type,if-modified-since",
+      expose_headers="location,link,Authorization",
+      headers=['Content-Type', 'Authorization'], 
+      methods="OPTIONS,GET,HEAD,POST"
+    )
+    ```
+3. To test this two changes, a logger was placed on the decorated *data_home()* function to see if a token is sent from the frontend when an authenticated user logs in or refreshes the page
+
+4. To verify the the token received, an external library called *Flask-AWSCognito* was added to the end of the [requirements.txt](../backend-flask/requirements.txt) file. Also new folder [lib](../backend-flask/lib/) in the backend directory was created. Within the folder, a module called 
+[cognito_jwt_token.py](../backend-flask/lib/cognito_jwt_token.py). Please click on file to take a look at it's content
+
+5. In the [app.py](../backend-flask/app.py) file, a object of type *CognitoJwtToken* was imported and initialized by adding the following:
+    ```py
+    #Other Imports ....
+
+    #import token verifyer
+    from lib.cognito_jwt_token import TokenVerifyError, CognitoJwtToken
+
+
+    app = Flask(__name__)
+
+    #JWT Token
+    cognito_jwt_token = CognitoJwtToken(
+                              user_pool_id = os.getenv("AWS_COGNITO_USER_POOLS_ID"), 
+                              user_pool_client_id = os.getenv("AWS_COGNITO_CLIENT_ID"), 
+                              region = os.getenv("AWS_DEFAULT_REGION")
+                              )
+    ```
+
+6. In the same file as above, I modified the *data_home()* method as following:
+    ```py
+    @app.route("/api/activities/home", methods=['GET'])
+    def data_home():
+
+      access_token = cognito_jwt_token.extract_access_token(request.headers)
+      if access_token == "null": #empty accesstoken
+        data = HomeActivities.run()
+        return data, 200
+      
+      # If token isn't null
+      try:
+        cognito_jwt_token.verify(access_token)
+        app.logger.debug("Authenicated")
+        app.logger.debug(f"User: {cognito_jwt_token.claims['username']}")
+        data = HomeActivities.run(cognito_user=cognito_jwt_token.claims['username'])
+      except TokenVerifyError as e:
+        app.logger.debug("Authentication Failed")
+        app.logger.debug(e)
+        data = HomeActivities.run()
+
+      return data, 200
+    ```
+7. In the [home_activities.py](../backend-flask/services/home_activities.py) file, the class method *run()* was modified to accept a user and show an additional crud :
+
+    ```py
+    class HomeActivities:
+      def run(logger=None, cognito_user=None): # add cognito_user
+        # logger.info("Test from Home Activities")
+        with tracer.start_as_current_span("home-activities-mock-data"):
+          
+          # ... Other parts
+
+          if cognito_user is not None:
+            extra_crud = {
+              'uuid': '248959df-3079-4947-b847-9e0892d1bab4',
+              'handle':  'Abby',
+              'message': 'Always ready to give it my all...',
+              'created_at': (now - timedelta(hours=1)).isoformat(),
+              'expires_at': (now + timedelta(hours=12)).isoformat(),
+              'likes': 600,
+              'replies': []
+            }
+            results.insert(0,extra_crud)
+          span.set_attribute("app.result_length", len(results))
+          return results
+    ```
+8. Before Testing, I added the enviroment variables to [docker-compose.yml](../docker-compose.yml) file for the backend services:
+    ```yaml
+    version: "3.8"
+    services:
+      backend-flask:
+        environment:
+          # Other Environment variables
+          AWS_COGNITO_USER_POOLS_ID: "${AWS_USER_POOLS_ID}"
+          AWS_COGNITO_CLIENT_ID: "${COGNITO_APP_CLIENT_ID}"
+    ```
+
+9. Lastly, I ensured the jwt is removed when the user logs out by making the a modification to *signOut* method in [ProfileInfo.js](../frontend-react-js/src/components/ProfileInfo.js):
+    ```js
+    const signOut = async () => {
+      try {
+          await Auth.signOut({ global: true });
+          window.location.href = "/"
+          localStorage.removeItem("access_token") // Remove token when user logs out.
+      } catch (error) {
+          console.log('error signing out: ', error);
+      }
+    }
+    ```
+
+10. Please see evidence below:
+    ![localized](./images/localized.gif)
