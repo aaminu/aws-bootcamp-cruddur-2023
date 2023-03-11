@@ -1,4 +1,4 @@
-from werkzeug.wrappers import Request, Response, ResponseStream
+from flask import request
 
 
 class JWTVerificationMiddleware():
@@ -9,15 +9,18 @@ class JWTVerificationMiddleware():
     def __init__(self, app, decoder_verifier_handler):
         """
         Input:
-            app:                           Flask app handle
+            app:                           Flask app.wsgi_app handle
             decoder_verifier_handler:      JWT decoder and verifier
                                             This object should have a method called verify() which
                                             takes an argument/variable called <token>
         """
-        self.app = app.wsgi_app
+        self.app = app
+        self.app.logger.info("initializing jwt decoder middleware")
         self.token_claimer = decoder_verifier_handler
-        self.logger = app.logger
 
-    def __call__(self, environ, start_response):
-        request = Request(environ)
-        self.logger.debug(request)
+    def _before_request(self):
+        headers = request.headers
+        access_token = self.token_claimer.extract_access_token(request.headers)
+        
+        self.app.logger.info(request.__dict__)
+        return self.app.wsgi_app(environ, start_response)
