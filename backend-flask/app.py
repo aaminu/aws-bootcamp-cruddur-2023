@@ -14,7 +14,7 @@ from services.messages import *
 from services.create_message import *
 from services.show_activity import *
 
-from lib.cognito_jwt_token import TokenVerifyError, CognitoJwtToken
+from lib.cognito_jwt_token import CognitoJwtToken
 from lib.jwt_verify_middleware import JWTVerificationMiddleware
 
 # Rollbar

@@ -1,6 +1,6 @@
 # Week 3 — Decentralized Authentication
 
-## **Required Homework ** 
+## **Required Homework** 
 
 ### **Setup Cognito User Pool**
 Provision a user pool in aws cognito via click-ops involves having valid aws account. The following approach was implemented:
@@ -483,3 +483,118 @@ This section contains work done to send the JWT to the backend server, verify it
 
 10. Please see evidence below:
     ![localized](./images/localized.gif)
+
+
+## **Homework Challenges** 
+
+### **Decouple the JWT verify from the application code by writing a  Flask Middleware**
+Since the goal is to avoid a tightly coupled verification of the token, my approach of the middleware was to grab the initial request, verify the token if any, and attach the claim retrieved to the request argument before the request is handled by the necessary endpoint. At the endpoint (route method), I simply retrieve the the claims from the "request.args" object.
+
+To achieve the aforementioned, the following steps was performed:
+1. Created a new python file ([jwt_verify_middleware.py](../backend-flask/lib/jwt_verify_middleware.py)) in the [backend-flask/lib](../backend-flask/lib/) directory.
+
+2. The file contains the middleware class. It expects two arguments i.e. *Flask() object* and any *jwt verifier-decoder object*.
+
+3. It is important that the *jwt verifier-decoder object* has a callable attributed (method) that takes an argument called *verify(token)*. The argument would be the JWT sent from the client-side as *Authorization* in the request header
+4. It is also important that the *jwt verifier-decoder object* contains an instance variable called *claims* which is updated in the *verify* method
+
+5. The content of [jwt_verify_middleware.py](../backend-flask/lib/jwt_verify_middleware.py) is shown below:
+    ```py
+    from flask import request
+    from werkzeug.datastructures import ImmutableMultiDict
+
+    class JWTVerificationMiddleware():
+        '''
+        Simple JWT verification middleware for a flask app.
+        '''
+
+        def __init__(self, app, decoder):
+            """
+            Input:
+                app:                           Flask app handle
+                decoder_verifier_handler:      JWT decoder and verifier
+                                                This object should have a method called verify() which
+                                                takes an argument/variable called <token> and
+                                                and an instance variable call <claims> which is updated
+                                                after a call to vierify is completed
+            """
+            self.app = app
+            self.app.logger.info("initializing jwt decoder middleware")
+            self.decoder = decoder
+
+            self.app.before_request(self._before_request)
+
+        def _before_request(self):
+            access_token = self.extract_access_token(request.headers)
+            request_args = request.args.to_dict()
+
+            if access_token == "null": #empty accesstoken
+                request_args['claims'] = {}
+                request_args["claims_error"] = True
+                request_args["claims_error_message"] = "Empty Access Token"
+                request.args = ImmutableMultiDict(request_args)
+                return
+            
+            try:
+                self.decoder.verify(access_token)
+                request_args['claims'] = self.decoder.claims
+                request_args["claims_error"] = False
+                request_args["claims_error_message"] = ""
+
+            except Exception as e:
+                request_args['claims'] = {}
+                request_args["claims_error"] = True 
+                request_args["claims_error_message"] = repr(e)
+
+            request.args = ImmutableMultiDict(request_args)
+        
+        @staticmethod
+        def extract_access_token(request_headers):
+            access_token = None
+            auth_header = request_headers.get("Authorization")
+            if auth_header and " " in auth_header:
+                _, access_token = auth_header.split()
+            return access_token
+    ``` 
+6. Since we already have a *jwt verifier-decoder* class, I used it with the middleware from above. In [app.py](../backend-flask/app.py), I did the following:
+    - Imported the middlewarer class
+    ```py
+    from lib.cognito_jwt_token import CognitoJwtToken
+    from lib.jwt_verify_middleware import JWTVerificationMiddleware
+    ```
+
+
+  - Instantiated the *jwt verifier-decoder* object and wrapped the app :
+
+    ```py
+    # JWT Token
+    cognito_jwt_token = CognitoJwtToken(
+        user_pool_id=os.getenv("AWS_COGNITO_USER_POOLS_ID"),
+        user_pool_client_id=os.getenv("AWS_COGNITO_CLIENT_ID"),
+        region=os.getenv("AWS_DEFAULT_REGION")
+    )
+
+    app = Flask(__name__)
+
+    # Wrap app with middleware
+    JWTVerificationMiddleware(app, cognito_jwt_token)
+
+    ```
+
+  - Finally in the *data_home()* method, I used the decoded claims:
+    ```py
+    @app.route("/api/activities/home", methods=['GET'])
+    def data_home():
+        claims = request.args.get("claims")
+        data = HomeActivities.run(cognito_user=claims.get("username"))
+        return data, 200
+    ```
+
+7. Doing docker compose up and inspecting the the frontend shows that it works are result is similar to earlier results.
+    evidence below:
+    ![localized](./images/localized.gif)
+
+**N.B** There will be 3 items always present in the *request.args* object using this approach. This items are:
+- claims: A dictionary containing different field according to the JWT specification used. This will be empty if no jwt is present in the request header or an error occurs during verification
+- claims_error: A boolean, to indicate that the claims is empty and an error was present
+- claims_error_message: A string indicating what went wrong. The the claims_error is False, this field will be an empty string.
