@@ -30,7 +30,10 @@ postgresql://[username[:password]@][netloc][:port][/dbname][?param1=value1&...]
 export CONNECTION_URL="postgresql://postgres:password@localhost:5432/cruddur"
 gp env CONNECTION_URL=$CONNECTION_URL
 
-export PROD_DB_ENDPOINT = <my-endpoint>
+export PROD_DB_ENDPOINT=<my-endpoint>
 gp env PROD_DB_ENDPOINT=$PROD_DB_ENDPOINT 
 export PROD_CONNECTION_URL = "postgresql://${POSTGRES_MASTER_USERNAME}:${POSTGRES_MASTER_PASSWORD}@${PROD_DB_ENDPOINT}:${POSTGRES_PORT}/cruddur"
- 
+gp env PROD_CONNECTION_URL=$PROD_CONNECTION_URL
+
+
+chmod 744 db-*
