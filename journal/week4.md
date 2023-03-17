@@ -37,3 +37,6 @@ gp env PROD_CONNECTION_URL=$PROD_CONNECTION_URL
 
 
 chmod 744 db-*
+
+psycopg[binary]
+psycopg[pool]

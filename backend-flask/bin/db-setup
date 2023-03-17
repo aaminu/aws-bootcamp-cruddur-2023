@@ -1,0 +1,15 @@
+#! /usr/bin/bash -e 
+
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="db-setup"
+printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
+
+
+current_file_path=`realpath $0`
+bin_dir=`dirname $current_file_path`
+
+source $bin_dir/db-drop
+source $bin_dir/db-create
+source $bin_dir/db-schema-load
+source $bin_dir/db-seed
