@@ -530,21 +530,90 @@ The goal of this chapter is to insert registered users post registration confirm
     ```
 4. Moved SQL statements from python modules and created sql files in [/backend-flask/db/sql/activities](../backend-flask/db/sql/) directory.
 
-5. To get the posting of an activity work, I had to change the harrdcoded "andrewbrown" to the username present in my db. This is a temporary fix and can be done in the [app.py](../backend-flask/app.py) file:
-    ```python
-    @app.route("/api/activities", methods=['POST', 'OPTIONS'])
-    @cross_origin()
-    def data_activities():
-        user_handle = 'blaquedayo'
-        message = request.json['message']
-        ttl = request.json['ttl']
-        model = CreateActivity.run(message, user_handle, ttl)
-        if model['errors'] is not None:
-            return model['errors'], 422
-        else:
-            return model['data'], 200
-        return
-    ```
+5. To get the posting of an activity to work, I had to change the hardcoded "andrewbrown" to the username passed from the front end. This fix and can be done by: 
+    
+    - In the [HomeFeedPage.js](../frontend-react-js/src/pages/HomeFeedPage.js), forward the user data to the ActivityForm by:
+        ```js
+        return (
+        <article>
+        <DesktopNavigation user={user} active={'home'} setPopped={setPopped} />
+        <div className='content'>
+            <ActivityForm
+            user_handle={user} //Pass the user object here
+            popped={popped}
+            setPopped={setPopped}
+            setActivities={setActivities}
+            />
+            <ReplyForm
+            activity={replyActivity}
+            popped={poppedReply}
+            setPopped={setPoppedReply}
+            setActivities={setActivities}
+            activities={activities}
+            />
+            <ActivityFeed
+            title="Home"
+            setReplyActivity={setReplyActivity}
+            setPopped={setPoppedReply}
+            activities={activities}
+            />
+        </div>
+        <DesktopSidebar user={user} />
+        </article>
+        );
+        ```
+    - In the [ActivityForm.js](../frontend-react-js/src/components/ActivityForm.js), include the user handle in the post request message:
+        ```js
+        const onsubmit = async (event) => {
+        event.preventDefault();
+        try {
+        const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities`
+        console.log('onsubmit payload', message)
+        const res = await fetch(backend_url, {
+            method: "POST",
+            headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+            user_handle: props.user_handle.handle, //include it the post request
+            message: message,
+            ttl: ttl
+            }),
+        });
+        let data = await res.json();
+        if (res.status === 200) {
+            // add activity to the feed
+            props.setActivities(current => [data, ...current]);
+            // reset and close the form
+            setCount(0)
+            setMessage('')
+            setTtl('7-days')
+            props.setPopped(false)
+        } else {
+            console.log(res)
+        }
+        } catch (err) {
+            console.log(err);
+        }
+        }
+        ```
+    - Finally in the [app.py](../backend-flask/app.py) file, grab the user_handle:
+
+        ```python
+        @app.route("/api/activities", methods=['POST', 'OPTIONS'])
+        @cross_origin()
+        def data_activities():
+            user_handle = request.json['user_handle']
+            message = request.json['message']
+            ttl = request.json['ttl']
+            model = CreateActivity.run(message, user_handle, ttl)
+            if model['errors'] is not None:
+                return model['errors'], 422
+            else:
+                return model['data'], 200
+            return
+        ```
 6. See below for successfully posted crudds:
 
     ![crudds](./images/Crudds.png)
