@@ -37,7 +37,7 @@ class Db:
         no_color = '\033[0m'
         app.logger.info(f'{blue} SQL Params:{no_color}')
         for key, value in params.items():
-            app.logger.info(key, ":", value)
+            app.logger.info(f"{key}: {value}")
 
     def print_sql(self, title, sql):
         """Print SQL Statement"""
@@ -71,19 +71,20 @@ class Db:
     def query_array_json(self, sql, **params):
         """Query Database and return an array of json"""
         self.print_sql('array', sql)
-        self.print_params(params)
+        self.print_params(**params)
 
         wrapped_sql = self.query_wrap_array(sql)
         with self.pool.connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(wrapped_sql, params)
-                json = cur.fetchall()
+                json = cur.fetchone()
+                app.logger.info(f"Returned JSON: {json}")
                 return json[0]
 
     def query_object_json(self, sql, **params):
         """Query Database and return an array of json"""
         self.print_sql('json', sql)
-        self.print_params(params)
+        self.print_params(**params)
 
         wrapped_sql = self.query_wrap_object(sql)
         with self.pool.connection() as conn:
@@ -93,7 +94,7 @@ class Db:
                 if json == None:
                     return {}
                 else:
-                    return json
+                    return json[0]
 
     def query_wrap_object(self, template):
         """Wrap query for a json object return"""

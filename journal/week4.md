@@ -301,4 +301,250 @@ The goal of this chapter is to insert registered users post registration confirm
     ![post-confirm-db](./images/post-confirm-db.png)
 
 
+### **Creating New Activities with a Database Insert**
+1. Refactored the [db.py](../backend-flask/lib/db.py) module to provide extra functionality. PS: Mine is a bit different from Andrew's incase you are reading mine. Pay attention to my use of *parms(positional arguments) and **parrams(named arguments)
+    ```python
+    import os
+    import re
+    import sys
+    from flask import current_app as app
+    from psycopg_pool import ConnectionPool
 
+
+    class Db:
+        def __init__(self):
+            self.init_pool()
+
+        def init_pool(self):
+            """Start a Connection Pool"""
+            connection_url = os.getenv("CONNECTION_URL")
+            self.pool = ConnectionPool(connection_url)
+
+        def read_sql_template(self, *args):
+            """ Reading SQL Templates in db Directory"""
+            path_list = list((app.root_path, 'db', 'sql',) + args)
+            path_list[-1] = path_list[-1] + ".sql"
+
+            template_path = os.path.join(*path_list)
+
+            green = '\033[92m'
+            no_color = '\033[0m'
+            app.logger.info("\n")
+            app.logger.info(
+                f'{green} Load SQL Template: {template_path} {no_color}')
+
+            with open(template_path, 'r') as f:
+                template_content = f.read()
+            return template_content
+
+        def print_params(self, **params):
+            """Print Parameters passed into SQL"""
+            blue = '\033[94m'
+            no_color = '\033[0m'
+            app.logger.info(f'{blue} SQL Params:{no_color}')
+            for key, value in params.items():
+                app.logger.info(f"{key}: {value}")
+
+        def print_sql(self, title, sql):
+            """Print SQL Statement"""
+            cyan = '\033[96m'
+            no_color = '\033[0m'
+            app.logger.info(f'{cyan} SQL STATEMENT-[{title}]------{no_color}')
+            app.logger.info(sql)
+
+        def query_commit(self, sql, **params):
+            """ Commit a Query"""
+            pattern = r"\bRETURNING\b"
+            is_returning_id = re.search(pattern, sql)
+
+            if is_returning_id is not None:
+                self.print_sql('commit with returning', sql)
+            else:
+                self.print_sql('commit without return', sql)
+
+            try:
+                with self.pool.connection() as conn:
+                    cur = conn.cursor()
+                    cur.execute(sql, params)
+                    if is_returning_id:
+                        returning_id = cur.fetchone()[0]
+                    conn.commit()
+                    if is_returning_id:
+                        return returning_id
+            except Exception as err:
+                self.print_sql_err(err)
+
+        def query_array_json(self, sql, **params):
+            """Query Database and return an array of json"""
+            self.print_sql('array', sql)
+            self.print_params(**params)
+
+            wrapped_sql = self.query_wrap_array(sql)
+            with self.pool.connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(wrapped_sql, params)
+                    json = cur.fetchone()
+                    app.logger.info(f"Returned JSON: {json}")
+                    return json[0]
+
+        def query_object_json(self, sql, **params):
+            """Query Database and return an array of json"""
+            self.print_sql('json', sql)
+            self.print_params(**params)
+
+            wrapped_sql = self.query_wrap_object(sql)
+            with self.pool.connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(wrapped_sql, params)
+                    json = cur.fetchone()
+                    if json == None:
+                        return {}
+                    else:
+                        return json[0]
+
+        def query_wrap_object(self, template):
+            """Wrap query for a json object return"""
+            sql = f"""
+                    (SELECT COALESCE(row_to_json(object_row),'{{}}'::json) FROM (
+                    {template}
+                    ) object_row);
+                """
+            return sql
+
+        def query_wrap_array(self, template):
+            """Wrap query for an array of json object return"""
+            sql = f"""
+                    (SELECT COALESCE(array_to_json(array_agg(row_to_json(array_row))),'[]'::json) FROM (
+                    {template}
+                    ) array_row);
+                """
+            return sql
+
+        def print_sql_err(self, err):
+            # get details about the exception
+            err_type, err_obj, traceback = sys.exc_info()
+
+            # get the line number when exception occured
+            line_num = traceback.tb_lineno
+
+            # print the connect() error
+            app.logger.info("\npsycopg ERROR:", err, "on line number:", line_num)
+            app.logger.info("psycopg traceback:", traceback, "-- type:", err_type)
+
+            # print the pgcode and pgerror exceptions
+            app.logger.info("pgerror:", err.pgerror)
+            app.logger.info("pgcode:", err.pgcode, "\n")
+
+
+    db = Db()
+    ```
+2. Refactored the [home_activities.py](../backend-flask/services/home_activities.py) to make use of the db object from above:
+    ```python
+    from lib.db import db
+    from datetime import datetime, timedelta, timezone
+    from opentelemetry import trace
+
+    tracer = trace.get_tracer("home-activities")
+
+
+    class HomeActivities:
+        def run(logger=None, cognito_user=None):
+            # logger.info("Test from Home Activities")
+            with tracer.start_as_current_span("home-activities-mock-data"):
+                span = trace.get_current_span()
+                now = datetime.now(timezone.utc).astimezone()
+                span.set_attribute("app.now", now.isoformat())
+
+                sql = db.read_sql_template('activities', 'home')
+                results = db.query_array_json(sql)
+
+                return results
+    ```
+3. Refactored the [create_activity.py](../backend-flask/services/create_activity.py) to make use of the db object from above:
+    ```python
+    from datetime import datetime, timedelta, timezone
+    from lib.db import db
+
+
+    class CreateActivity:
+        def run(message, user_handle, ttl):
+            model = {
+                'errors': None,
+                'data': None
+            }
+
+            now = datetime.now(timezone.utc).astimezone()
+
+            if (ttl == '30-days'):
+                ttl_offset = timedelta(days=30)
+            elif (ttl == '7-days'):
+                ttl_offset = timedelta(days=7)
+            elif (ttl == '3-days'):
+                ttl_offset = timedelta(days=3)
+            elif (ttl == '1-day'):
+                ttl_offset = timedelta(days=1)
+            elif (ttl == '12-hours'):
+                ttl_offset = timedelta(hours=12)
+            elif (ttl == '3-hours'):
+                ttl_offset = timedelta(hours=3)
+            elif (ttl == '1-hour'):
+                ttl_offset = timedelta(hours=1)
+            else:
+                model['errors'] = ['ttl_blank']
+
+            if user_handle == None or len(user_handle) < 1:
+                model['errors'] = ['user_handle_blank']
+
+            if message == None or len(message) < 1:
+                model['errors'] = ['message_blank']
+            elif len(message) > 280:
+                model['errors'] = ['message_exceed_max_chars']
+
+            if model['errors']:
+                model['data'] = {
+                    'handle':  user_handle,
+                    'message': message
+                }
+            else:
+                expires_at = (now + ttl_offset)
+                uuid = CreateActivity.create_activity(
+                    user_handle, message, expires_at)
+
+                object_json = CreateActivity.query_object_activity(uuid)
+                model['data'] = object_json
+            return model
+
+        def create_activity(handle, message, expires_at):
+            sql = db.read_sql_template('activities', 'create')
+            uuid = db.query_commit(sql,
+                                handle=handle,
+                                message=message,
+                                expires_at=expires_at
+                                )
+            return uuid
+
+        def query_object_activity(uuid):
+            sql = db.read_sql_template('activities', 'object')
+            return db.query_object_json(sql, uuid=uuid
+                                        )
+    ```
+4. Moved SQL statements from python modules and created sql files in [/backend-flask/db/sql/activities](../backend-flask/db/sql/) directory.
+
+5. To get the posting of an activity work, I had to change the harrdcoded "andrewbrown" to the username present in my db. This is a temporary fix and can be done in the [app.py](../backend-flask/app.py) file:
+    ```python
+    @app.route("/api/activities", methods=['POST', 'OPTIONS'])
+    @cross_origin()
+    def data_activities():
+        user_handle = 'blaquedayo'
+        message = request.json['message']
+        ttl = request.json['ttl']
+        model = CreateActivity.run(message, user_handle, ttl)
+        if model['errors'] is not None:
+            return model['errors'], 422
+        else:
+            return model['data'], 200
+        return
+    ```
+6. See below for successfully posted crudds:
+
+    ![crudds](./images/Crudds.png)
