@@ -224,14 +224,18 @@ The goal of this chapter is to insert registered users post registration confirm
                 cognito_user_id
                 ) 
             VALUES(
-                '{user_display_name}', 
-                '{user_email}',
-                '{user_handle}', 
-                '{user_cognito_id}'
+                %s, %s, %s, %s
                 )
-            """
+            """ 
+            args= [
+                user_display_name, 
+                user_email, 
+                user_handle, 
+                user_cognito_id
+                ]
+                
             print(sql)
-            cur.execute(sql)
+            cur.execute(sql, *args)
             conn.commit()
             print('Commit Done')
 
