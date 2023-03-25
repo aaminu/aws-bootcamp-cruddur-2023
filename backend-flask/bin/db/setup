@@ -7,9 +7,9 @@ printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
 
 
 current_file_path=`realpath $0`
-bin_dir=`dirname $current_file_path`
+bin_db_dir=`dirname $current_file_path`
 
-source $bin_dir/db-drop
-source $bin_dir/db-create
-source $bin_dir/db-schema-load
-source $bin_dir/db-seed
+source $bin_db_dir/drop
+source $bin_db_dir/create
+source $bin_db_dir/schema-load
+source $bin_db_dir/seed

@@ -1,0 +1,24 @@
+#! /usr/bin/bash -e 
+
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="ddb-delete-tables"
+printf "${CYAN}== ${LABEL}===${NO_COLOR}\n"
+
+if [ -z "$1" ]; then
+    echo "Needs table name to be supplied eg .ddb/drop <table-name> [prod]"
+    exit 1
+fi
+TABLE_NAME=$1
+
+
+if [ "$1" = "prod" ]; then
+    echo "using production url"
+    CON_URL=""
+else
+    CON_URL="--endpoint-url=http://localhost:8000"
+fi
+
+aws dynamodb delete-table $CON_URL \
+    --output json \
+    --table-name $TABLE_NAME

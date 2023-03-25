@@ -1,15 +1,16 @@
 #! /usr/bin/bash
-
 CYAN='\033[1;36m'
 NO_COLOR='\033[0m'
-LABEL="db-seed"
+LABEL="db-schema-load"
 printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
 
-current_file_path=`realpath $0`
-file_parent_dir=`dirname $(dirname $current_file_path)`
+echo "db-schema-load"
 
-seed_path=$file_parent_dir/db/seed.sql
-echo $seed_path
+current_file_path=`realpath $0`
+file_parent_dir=`dirname $(dirname $(dirname $current_file_path))`
+
+schema_path=$file_parent_dir/db/schema.sql
+echo $schema_path
 
 if [ "$1" = "prod" ]; then
     echo "using production url"
@@ -18,4 +19,4 @@ else
     CON_URL=$CONNECTION_URL
 fi
 
-psql $CON_URL cruddur < $seed_path
+psql $CON_URL cruddur < $schema_path
