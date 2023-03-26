@@ -17,6 +17,7 @@ table_name = "cruddr-messages"
 message_group_uuid = "5ae290ed-55d1-47a0-bc6d-fe2bc2700399"
 
 # define the query parameters
+year = str(datetime.now().year)
 query_params = {
   'TableName': table_name,
   'KeyConditionExpression': 'pk = :pk AND begins_with(sk, :year)',
@@ -24,7 +25,7 @@ query_params = {
   'Limit': 20,
   'ExpressionAttributeValues': {
     ':pk': {'S': f"MSG#{message_group_uuid}"},
-    ':year': {'S': '2023'}
+    ':year': {'S': year}
   },
   'ReturnConsumedCapacity': 'TOTAL'
 }

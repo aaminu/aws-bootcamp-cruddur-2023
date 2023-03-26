@@ -32,15 +32,18 @@ def get_user_uuid(user_handle):
     print(user)
     return user["uuid"]
 
-brown_user_uuid = get_user_uuid('andrewbrown')
-print(brown_user_uuid)
+user_uuid = get_user_uuid(os.getenv('user1_username'))
+print(user_uuid)
 
 # define the query parameters
+year = str(datetime.now().year)
 query_params = {
   'TableName': table_name,
-  'KeyConditionExpression': 'pk = :pkey',
+  'KeyConditionExpression': 'pk = :pk AND begins_with(sk, :year)',
+  'ScanIndexForward': True,
   'ExpressionAttributeValues': {
-    ':pkey': {'S': f"GRP#{brown_user_uuid}"}
+    ':pkey': {'S': f"GRP#{user_uuid}"},
+    ':year': {'S': year}
   },
   'ReturnConsumedCapacity': 'TOTAL'
 }

@@ -98,6 +98,14 @@ class Db:
                 else:
                     return json[0]
 
+    def query_value(self,sql, log=False, **params):
+        self.print_sql('value',sql,log)
+        with self.pool.connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql,params)
+                json = cur.fetchone()
+                return json[0]
+
     def query_wrap_object(self, template):
         """Wrap query for a json object return"""
         sql = f"""

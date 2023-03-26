@@ -1,4 +1,4 @@
-#! /usr/bin/bash
+#! /usr/bin/bash -e
 
 CYAN='\033[1;36m'
 NO_COLOR='\033[0m'
@@ -18,4 +18,5 @@ else
     CON_URL=$CONNECTION_URL
 fi
 
-psql $CON_URL cruddur < $seed_path
+
+psql $CON_URL cruddur -v user1_name="$user1_name" -v user1_email=$user1_email -v user1_username=$user1_username -v user2_name="$user2_name" -v user2_email=$user2_email -v user2_username=$user2_username < $seed_path

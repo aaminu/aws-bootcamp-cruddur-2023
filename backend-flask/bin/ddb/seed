@@ -6,9 +6,7 @@ import os
 from datetime import datetime, timedelta, timezone
 
 current_path = os.path.dirname(os.path.abspath(__file__))
-print(current_path)
 parent_path = os.path.abspath(os.path.join(current_path, '..', '..'))
-print(parent_path)
 sys.path.append(parent_path)
 from lib.db import db
 
@@ -33,12 +31,17 @@ def get_user_uuids():
             %(other_handle)s
             )
     """
+    my_user_username = os.getenv('user1_username')
+    other_handle_username = os.getenv('user2_username')
+
     users = db.query_array_json(sql, **{
-        'my_handle':  'andrewbrown',
-        'other_handle': 'bayko'
+        'my_handle':  my_user_username,
+        'other_handle': other_handle_username
     })
-    my_user    = next((item for item in users if item["handle"] == 'andrewbrown'), None)
-    other_user = next((item for item in users if item["handle"] == 'bayko'), None)
+    print(users)
+
+    my_user    = next((item for item in users if item["handle"] == my_user_username), None)
+    other_user = next((item for item in users if item["handle"] == other_handle_username), None)
     results = {
         'my_user': my_user,
         'other_user': other_user
