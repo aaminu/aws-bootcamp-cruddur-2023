@@ -40,15 +40,15 @@ def lambda_handler(event, context):
             delete_item = table.delete_item(Key={'pk': i['pk'], 'sk': i['sk']})
             print("DELETE ===>",delete_item)
         
-        response = table.put_item(
-            Item={
-            'pk': i['pk'],
-            'sk': sk,
-            'message_group_uuid':i['message_group_uuid'],
-            'message':message,
-            'user_display_name': i['user_display_name'],
-            'user_handle': i['user_handle'],
-            'user_uuid': i['user_uuid']
-            }
-        )
-        print("CREATE ===>",response)
+            response = table.put_item(
+                Item={
+                'pk': i['pk'],
+                'sk': sk,
+                'message_group_uuid':i['message_group_uuid'],
+                'message':message,
+                'user_display_name': i['user_display_name'],
+                'user_handle': i['user_handle'],
+                'user_uuid': i['user_uuid']
+                }
+            )
+            print("CREATE ===>",response)
