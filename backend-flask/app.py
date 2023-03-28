@@ -139,18 +139,19 @@ def data_message_groups():
 
 @app.route("/api/messages/<string:message_group_uuid>", methods=['GET'])
 def data_messages(message_group_uuid):
-    
+
     claims = request.args.get("claims")
     cognito_user_id = claims.get("sub")
     if cognito_user_id is None:
         return {}, 401
 
     model = Messages.run(cognito_user_id=cognito_user_id,
-        message_group_uuid=message_group_uuid)
+                         message_group_uuid=message_group_uuid)
     if model['errors'] is not None:
         return model['errors'], 422
     else:
         return model['data'], 200
+
 
 @app.route("/api/messages", methods=['POST', 'OPTIONS'])
 @cross_origin()
@@ -166,22 +167,21 @@ def data_create_message():
     if message_group_uuid is not None:
         model = CreateMessage.run(
             "update",
-            message=message, 
+            message=message,
             message_group_uuid=message_group_uuid,
             cognito_user_id=cognito_user_id,
             user_receiver_handle=user_receiver_handle)
     else:
         model = CreateMessage.run(
             "create",
-            message=message, 
+            message=message,
             cognito_user_id=cognito_user_id,
             user_receiver_handle=user_receiver_handle)
-    
+
     if model['errors'] is not None:
         return model['errors'], 422
     else:
         return model['data'], 200
-   
 
 
 @app.route("/api/activities/home", methods=['GET'])
@@ -234,7 +234,7 @@ def data_activities():
 
 @app.route("/api/activities/<string:activity_uuid>", methods=['GET'])
 def data_show_activity(activity_uuid):
-    data = ShowActivity.run(activity_uuid=activity_uuid)
+    data = ShowActivities.run(activity_uuid=activity_uuid)
     return data, 200
 
 
@@ -250,10 +250,12 @@ def data_activities_reply(activity_uuid):
         return model['data'], 200
     return
 
+
 @app.route("/api/users/@<string:handle>/short", methods=['GET'])
 def data_users_short(handle):
-  data = UsersShort.run(handle)
-  return data, 200
+    data = UsersShort.run(handle)
+    return data, 200
+
 
 if __name__ == "__main__":
     app.run(debug=True)
