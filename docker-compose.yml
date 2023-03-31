@@ -1,6 +1,6 @@
 version: "3.8"
 services:
-  backend-flask:
+  backend-flask: 
     environment:
       FRONTEND_URL: "https://3000-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
       BACKEND_URL: "https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
@@ -19,7 +19,10 @@ services:
       # CONNECTION_URL: "${CONNECTION_LOCAL_DOCKER_URL}"
       # AWS_ENDPOINT_URL: "${DYNAMODB_LOCAL_ENDPOINT}"
 
-    build: ./backend-flask
+    build: 
+      context: ./backend-flask
+      args:
+        image_name: "${ECR_PYTHON_URL}:3.10-slim-buster"
     ports:
       - "4567:4567"
     volumes:
@@ -38,7 +41,10 @@ services:
       REACT_APP_AWS_COGNITO_REGION: "${AWS_DEFAULT_REGION}"
       REACT_APP_AWS_USER_POOLS_ID: "${AWS_USER_POOLS_ID}"
       REACT_APP_CLIENT_ID: "${COGNITO_APP_CLIENT_ID}"
-    build: ./frontend-react-js
+    build: 
+      context: ./frontend-react-js
+      args:
+        image_name: "${ECR_NODE_URL}:16.18"
     ports:
       - "3000:3000"
     volumes:

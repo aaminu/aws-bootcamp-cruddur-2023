@@ -227,15 +227,15 @@ The goal of this chapter is to insert registered users post registration confirm
                 %s, %s, %s, %s
                 )
             """ 
-            args= [
+            args= (
                 user_display_name, 
                 user_email, 
                 user_handle, 
                 user_cognito_id
-                ]
+            )
                 
             print(sql)
-            cur.execute(sql, *args)
+            cur.execute(sql, args)
             conn.commit()
             print('Commit Done')
 

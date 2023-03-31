@@ -1,4 +1,6 @@
-FROM node:16.18
+ARG image_name
+
+FROM ${image_name}
 
 ENV PORT=3000
 
