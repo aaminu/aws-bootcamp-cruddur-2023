@@ -3,9 +3,9 @@
 db/test
 flask/health check
 
-cloud watchlog
-aws logs create-log-group --log-group-name "/cruddur/fargate-cluster"
-aws logs put-retention-policy --log-group-name "/cruddur/fargate-cluster" --retention-in-days 3
+cloud watchlog (already have, just change rentention)
+aws logs create-log-group --log-group-name "cruddur"
+aws logs put-retention-policy --log-group-name "cruddur" --retention-in-days 3
 
 correction for post-confirmation-lambda
 
@@ -50,6 +50,117 @@ docker build -t backend-flask --build-arg image_name=$ECR_PYTHON_URL:3.10-slim-b
 docker tag backend-flask:latest $ECR_BACKEND_FLASK_URL:latest
 docker push $ECR_BACKEND_FLASK_URL:latest
 update in docker compose
+
+System Manager to keep sensitive parameters in parameter store
+aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/AWS_ACCESS_KEY_ID" --value $AWS_ACCESS_KEY_ID
+aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/AWS_SECRET_ACCESS_KEY" --value $AWS_SECRET_ACCESS_KEY
+aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/CONNECTION_URL" --value $PROD_CONNECTION_URL
+aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/ROLLBAR_ACCESS_TOKEN" --value $ROLLBAR_ACCESS_TOKEN
+aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/OTEL_EXPORTER_OTLP_HEADERS" --value "x-honeycomb-team=$HONEYCOMB_API_KEY"
+
+
+
+Before starting out in ECS: 
+create Service execution role
+- Create a role 
+aws iam create-role \    
+--role-name CruddurServiceExecutionRole  \   
+--assume-role-policy-document file://aws/policies/service-assume-role-execution-policy.json
+
+-attach a service policy that allows it access ssm for parameters
+aws iam put-role-policy \
+  --policy-name CruddurServiceExecutionPolicy \
+  --role-name CruddurServiceExecutionRole \
+  --policy-document file://aws/policies/service-execution-policy.json
+"
+
+
+create task role 
+- Create a role 
+aws iam create-role \
+--role-name CruddurTaskRole \
+--assume-role-policy-document file://aws/policies/task-assume-role-execution-policy.json
+
+-attach a service policy that allows it access ssm
+aws iam put-role-policy \
+  --policy-name CruddurTaskPolicy \
+  --role-name CruddurTaskRole \
+  --policy-document file://aws/policies/task-execution-policy.json
+
+
+- Allow CloudWatch Access for logging
+aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchFullAccess --role-name CruddurTaskRole
+
+- Allow Xray Deamon
+aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess --role-name CruddurTaskRole
+
+
+Create task-definitions
+In the file make sure the names match wat was in the docker compose file 
+aws ecs register-task-definition --cli-input-json file://aws/task-definitions/backend-flask.json
+
+export VPC and subnet groups
+export DEFAULT_VPC_ID=$(aws ec2 describe-vpcs \
+--filters "Name=isDefault, Values=true" \
+--query "Vpcs[0].VpcId" \
+--output text)
+
+echo $DEFAULT_VPC_ID
+
+export DEFAULT_SUBNET_IDS=$(aws ec2 describe-subnets  \
+ --filters Name=vpc-id,Values=$DEFAULT_VPC_ID \
+ --query 'Subnets[*].SubnetId' \
+ --output json | jq -r 'join(",")')
+echo $DEFAULT_SUBNET_IDS
+
+export CRUD_SERVICE_SG=$(aws ec2 create-security-group \
+  --group-name "crud-srv-sg" \
+  --description "Security group for Cruddur services on ECS" \
+  --vpc-id $DEFAULT_VPC_ID \
+  --query "GroupId" --output text)
+echo $CRUD_SERVICE_SG
+
+
+
+aws ec2 authorize-security-group-ingress \
+  --group-id $CRUD_SERVICE_SG \
+  --protocol tcp \
+  --port 80 \
+  --cidr 0.0.0.0/0
+
+
+
+Create a service is cruddr cluster and check it is running using cli from aws/json
+aws ecs create-service --cli-input-json file://aws/json/service-backend-flask.json
+
+
+Install session manager
+curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
+sudo dpkg -i session-manager-plugin.deb
+
+session-manager-plugin
+
+connect to the container by:
+aws ecs execute-command  \
+--region $AWS_DEFAULT_REGION \
+--cluster cruddur \
+--task 5745c1c6a87c49d9937440451b726ddf \
+--container backend-flask \
+--command "/bin/bash" \
+--interactive
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 front-end
 aws ecr create-repository \
