@@ -1,7 +1,7 @@
 # Week 6 — Deploying Containers
 
 db/test
-flask/health check
+flask/health-check
 
 cloud watchlog (already have, just change rentention)
 aws logs create-log-group --log-group-name "cruddur"
@@ -46,6 +46,7 @@ export ECR_BACKEND_FLASK_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazon
 gp env ECR_BACKEND_FLASK_URL=$ECR_BACKEND_FLASK_URL
 cd  backend
 update in flask Dockerfile image_name
+comment out x-ray in app.py and other services
 docker build -t backend-flask --build-arg image_name=$ECR_PYTHON_URL:3.10-slim-buster .
 docker tag backend-flask:latest $ECR_BACKEND_FLASK_URL:latest
 docker push $ECR_BACKEND_FLASK_URL:latest

@@ -1,0 +1,28 @@
+#! /usr/bin/bash -e 
+
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="ecs-connect-to service"
+printf "${CYAN}== ${LABEL}===${NO_COLOR}\n"
+
+if [ -z "$1" ]; then
+    echo "Needs cluster name to be supplied eg .ecs/connect-to-service <cluster-name> <task-name>"
+    exit 1
+fi
+CLUSTER=$1
+
+if [ -z "$2" ]; then
+    echo "Needs task name to be supplied eg .ecs/connect-to-service <cluster-name> <task-name>"
+    exit 1
+fi
+TASK_NAME=$2
+
+
+
+aws ecs execute-command  \
+--region $AWS_DEFAULT_REGION \
+--cluster $CLUSTER \
+--task $TASK_NAME \
+--container backend-flask \
+--command "/bin/bash" \
+--interactive

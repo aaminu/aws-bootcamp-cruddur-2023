@@ -22,5 +22,16 @@
     },
     "propagateTags": "SERVICE",
     "serviceName": "backend-flask",
-    "taskDefinition": "backend-flask"
-  }
+    "taskDefinition": "backend-flask",
+    "serviceConnectConfiguration": {
+      "enabled": true,
+      "namespace": "cruddur",
+      "services": [
+        {
+          "portName": "backend-flask",
+          "discoveryName": "backend-flask",
+          "clientAliases": [{"port": 4567}]
+        }
+      ]
+    }
+}

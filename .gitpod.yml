@@ -8,6 +8,7 @@ tasks:
       unzip awscliv2.zip
       sudo ./aws/install
       cd $THEIA_WORKSPACE_ROOT
+
   - name: npm-init
     init: |
       cd /workspace/aws-bootcamp-cruddur-2023/frontend-react-js
@@ -33,6 +34,7 @@ tasks:
     command: |
       cd "$THEIA_WORKSPACE_ROOT/backend-flask/"
       pip install -r requirements.txt
+      
   - name: fargate
     command: |
       curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
