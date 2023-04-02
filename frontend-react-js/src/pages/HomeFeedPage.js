@@ -10,12 +10,10 @@ import ActivityFeed from '../components/ActivityFeed';
 import ActivityForm from '../components/ActivityForm';
 import ReplyForm from '../components/ReplyForm';
 
-// [TODO] Authenication
-import Cookies from 'js-cookie'
 
 //Honeycomb Tracing
-import { trace, context, } from '@opentelemetry/api';
-const tracer = trace.getTracer();
+// import { trace, context, } from '@opentelemetry/api';
+// const tracer = trace.getTracer();
 
 export default function HomeFeedPage() {
   const [activities, setActivities] = React.useState([]);
@@ -40,20 +38,20 @@ export default function HomeFeedPage() {
       let resJson = await res.json();
       if (res.status === 200) {
         setActivities(resJson)
-        tracer.startActiveSpan('HomeFeedPageLoadData', hmfSpan => {
-          // Add attributes to custom span
-          hmfSpan.setAttribute('homeFeedPage.latency_MS', (endTime - startTime));
-          hmfSpan.setAttribute('homeFeedPage.status', true);
-          hmfSpan.end();
-        });
+        // tracer.startActiveSpan('HomeFeedPageLoadData', hmfSpan => {
+        //   // Add attributes to custom span
+        //   hmfSpan.setAttribute('homeFeedPage.latency_MS', (endTime - startTime));
+        //   hmfSpan.setAttribute('homeFeedPage.status', true);
+        //   hmfSpan.end();
+        // });
       } else {
         console.log(res)
-        tracer.startActiveSpan('HomeFeedPageLoadData', hmfSpan => {
-          // Add attributes to custom span
-          hmfSpan.setAttribute('homeFeedPage.latency_MS', (endTime - startTime));
-          hmfSpan.setAttribute('homeFeedPage.status', false);
-          hmfSpan.end();
-        });
+        // tracer.startActiveSpan('HomeFeedPageLoadData', hmfSpan => {
+        //   // Add attributes to custom span
+        //   hmfSpan.setAttribute('homeFeedPage.latency_MS', (endTime - startTime));
+        //   hmfSpan.setAttribute('homeFeedPage.status', false);
+        //   hmfSpan.end();
+        // });
       }
     } catch (err) {
       console.log(err);

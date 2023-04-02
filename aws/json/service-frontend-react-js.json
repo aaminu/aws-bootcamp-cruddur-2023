@@ -6,17 +6,17 @@
     "enableExecuteCommand": true,
     "loadBalancers": [
       {
-          "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:401093650699:targetgroup/cruddur-backend-flask-tg/7b1389b660c6d454",
-          "containerName": "backend-flask",
-          "containerPort": 4567
+          "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:401093650699:targetgroup/cruddur-frontend-reactjs-tg/6d15f7c5d62455be",
+          "containerName": "frontend-react-js",
+          "containerPort": 3000
       }
     ],
     "networkConfiguration": {
       "awsvpcConfiguration": {
         "assignPublicIp": "ENABLED",
         "securityGroups": [
-          "sg-0f982f52057b6700b"
-        ],
+            "sg-0f982f52057b6700b"
+          ],
         "subnets": [
             "subnet-05decd27a187f406d",
             "subnet-02d9b3c801e1b9725",
@@ -28,17 +28,17 @@
       }
     },
     "propagateTags": "SERVICE",
-    "serviceName": "backend-flask",
-    "taskDefinition": "backend-flask",
+    "serviceName": "frontend-react-js",
+    "taskDefinition": "frontend-react-js",
     "serviceConnectConfiguration": {
       "enabled": true,
       "namespace": "cruddur",
       "services": [
         {
-          "portName": "backend-flask",
-          "discoveryName": "backend-flask",
-          "clientAliases": [{"port": 4567}]
+          "portName": "frontend-react-js",
+          "discoveryName": "frontend-react-js",
+          "clientAliases": [{"port": 3000}]
         }
       ]
     }
-}
+  }

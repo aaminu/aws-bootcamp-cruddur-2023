@@ -130,7 +130,7 @@ aws ec2 authorize-security-group-ingress \
   --cidr 0.0.0.0/0
 
 
-
+create target groups and alb before creting services
 Create a service is cruddr cluster and check it is running using cli from aws/json
 aws ecs create-service --cli-input-json file://aws/json/service-backend-flask.json
 
@@ -152,17 +152,6 @@ aws ecs execute-command  \
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 front-end
 aws ecr create-repository \
   --repository-name frontend-react-js \
@@ -170,3 +159,17 @@ aws ecr create-repository \
 
 export ECR_FRONTEND_REACT_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/frontend-react-js"
 echo $ECR_FRONTEND_REACT_URL
+
+docker build \
+--build-arg REACT_APP_BACKEND_URL="$BACKEND_ALB_URL" \
+--build-arg REACT_APP_AWS_PROJECT_REGION="$AWS_DEFAULT_REGION" \
+--build-arg REACT_APP_AWS_COGNITO_REGION="$AWS_DEFAULT_REGION" \
+--build-arg REACT_APP_AWS_USER_POOLS_ID="$AWS_USER_POOLS_ID" \
+--build-arg REACT_APP_CLIENT_ID="$COGNITO_APP_CLIENT_ID" \
+-t frontend-react-js \
+-f Dockerfile.prod .
+
+docker tag frontend-react-js:latest $ECR_FRONTEND_REACT_URL:latest
+docker push $ECR_FRONTEND_REACT_URL:latest
+update in docker compose
+
