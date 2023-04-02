@@ -187,6 +187,7 @@ def data_create_message():
 
 
 @app.route("/api/activities/home", methods=['GET'])
+@cross_origin()
 def data_home():
     claims = request.args.get("claims")
     app.logger.info(claims)
