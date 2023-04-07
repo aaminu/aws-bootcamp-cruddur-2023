@@ -178,3 +178,19 @@ configure security groups
 aws ecs register-task-definition --cli-input-json file://aws/task-definitions/frontend-react-js.json
 
 aws ecs create-service --cli-input-json file://aws/json/service-frontend-react-js.json
+
+
+Do all the route53 and sg stuffs (populate this later)
+export BAckend domain name
+
+docker build \
+--build-arg REACT_APP_BACKEND_URL="https://$BACKEND_DOMAIN_URL" \
+--build-arg REACT_APP_AWS_PROJECT_REGION="$AWS_DEFAULT_REGION" \
+--build-arg REACT_APP_AWS_COGNITO_REGION="$AWS_DEFAULT_REGION" \
+--build-arg REACT_APP_AWS_USER_POOLS_ID="$AWS_USER_POOLS_ID" \
+--build-arg REACT_APP_CLIENT_ID="$COGNITO_APP_CLIENT_ID" \
+-t frontend-react-js \
+-f Dockerfile.prod .
+
+docker tag frontend-react-js:latest $ECR_FRONTEND_REACT_URL:latest
+docker push $ECR_FRONTEND_REACT_URL:latest

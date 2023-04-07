@@ -26,14 +26,15 @@ export default function HomeFeedPage() {
   const loadData = async () => {
     try {
       const backend_url = `${process.env.REACT_APP_BACKEND_URL}/api/activities/home`
-      var startTime = performance.now()
+      //console.log(backend_url)
+      //var startTime = performance.now()
       const res = await fetch(backend_url, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`
         },
         method: "GET"
       });
-      var endTime = performance.now()
+      // var endTime = performance.now()
 
       let resJson = await res.json();
       if (res.status === 200) {
