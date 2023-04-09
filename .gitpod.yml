@@ -11,7 +11,7 @@ tasks:
     
     command: |
       export GITPOD_IP=$(curl ifconfig.me)
-      source "$THEIA_WORKSPACE_ROOT/backend-flask/bin/rds/update-sg-rule"
+      source "$THEIA_WORKSPACE_ROOT/bin/rds/update-sg-rule"
 
   - name: npm-init
     init: |

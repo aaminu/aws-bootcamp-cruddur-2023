@@ -1,0 +1,15 @@
+#! /usr/bin/bash
+
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="db-kill-all"
+printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
+
+current_file_path=`realpath $0`
+file_parent_dir=`dirname $(dirname $(dirname $current_file_path))`
+
+kill_path=$file_parent_dir/backend-flask/db/kill-all-connections.sql
+
+echo $kill_path
+
+psql $CONNECTION_URL cruddur < $kill_path

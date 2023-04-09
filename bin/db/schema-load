@@ -9,7 +9,7 @@ echo "db-schema-load"
 current_file_path=`realpath $0`
 file_parent_dir=`dirname $(dirname $(dirname $current_file_path))`
 
-schema_path=$file_parent_dir/db/schema.sql
+schema_path=$file_parent_dir/backend-flask/db/schema.sql
 echo $schema_path
 
 if [ "$1" = "prod" ]; then

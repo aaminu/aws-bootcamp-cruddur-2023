@@ -1,0 +1,16 @@
+#! /usr/bin/bash -e 
+
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="Create-Service-Backend"
+printf "${CYAN}== ${LABEL}===${NO_COLOR}\n"
+
+current_file_path=`realpath $0`
+bin_dir=`dirname $(dirname $current_file_path)`
+base_dir=`dirname $bin_dir`
+SER_DEF_PATH="$base_dir/aws/json/service-backend-flask.json"
+
+echo $SER_DEF_PATH
+
+aws ecs create-service  \
+--cli-input-json "file://$SER_DEF_PATH"

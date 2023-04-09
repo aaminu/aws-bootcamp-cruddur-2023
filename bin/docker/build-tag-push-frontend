@@ -1,0 +1,44 @@
+#! /usr/bin/bash -e 
+
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="Frontend Build & Push Process"
+printf "${CYAN}== ${LABEL}===${NO_COLOR}\n"
+
+current_file_path=`realpath $0`
+bin_dir=`dirname $(dirname $current_file_path)`
+base_dir=`dirname $bin_dir`
+
+echo $current_file_path
+echo $bin_dir
+echo $base_dir
+
+source $bin_dir/ecr/ecr-login
+
+if [ -z "$1" ]; then
+    echo "Choose which image to build and push eg .docker/build-tag-push-frontend  <prod|dev>"
+    exit 1
+fi
+
+if [ "$1" = "prod" ]; then
+    echo "using production url"
+    FILE_NAME="Dockerfile.prod"
+elif [ "$1" = "dev" ]; then
+    FILE_NAME="Dockerfile"
+else
+    echo "Choose which correct file to use for the build and push eg .docker/build-tag-push-frontend  <prod|dev>"
+    exit 1
+fi
+
+
+docker build \
+--build-arg REACT_APP_BACKEND_URL="https://$BACKEND_DOMAIN_URL" \
+--build-arg REACT_APP_AWS_PROJECT_REGION="$AWS_DEFAULT_REGION" \
+--build-arg REACT_APP_AWS_COGNITO_REGION="$AWS_DEFAULT_REGION" \
+--build-arg REACT_APP_AWS_USER_POOLS_ID="$AWS_USER_POOLS_ID" \
+--build-arg REACT_APP_CLIENT_ID="$COGNITO_APP_CLIENT_ID" \
+-t frontend-react-js \
+-f $base_dir/frontend-react-js/$FILE_NAME $base_dir/frontend-react-js/
+
+docker tag frontend-react-js:latest $ECR_FRONTEND_REACT_URL:latest
+docker push $ECR_FRONTEND_REACT_URL:latest
