@@ -1,24 +1,8 @@
 version: "3.8"
 services:
   backend-flask: 
-    environment:
-      FRONTEND_URL: "https://3000-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
-      BACKEND_URL: "https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
-      OTEL_SERVICE_NAME: "backend-flask"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "https://api.honeycomb.io"
-      OTEL_EXPORTER_OTLP_HEADERS: "x-honeycomb-team=${HONEYCOMB_API_KEY}"
-      AWS_XRAY_URL: "*4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}*"
-      AWS_XRAY_DAEMON_ADDRESS: "xray-daemon:2000"
-      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
-      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
-      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
-      ROLLBAR_ACCESS_TOKEN: "${ROLLBAR_ACCESS_TOKEN}"
-      AWS_COGNITO_USER_POOLS_ID: "${AWS_USER_POOLS_ID}"
-      AWS_COGNITO_CLIENT_ID: "${COGNITO_APP_CLIENT_ID}"
-      # CONNECTION_URL: "${PROD_CONNECTION_URL}"
-      CONNECTION_URL: "${CONNECTION_LOCAL_DOCKER_URL}"
-      AWS_ENDPOINT_URL: "${DYNAMODB_LOCAL_ENDPOINT}"
-
+    env_file:
+      - backend-flask.env
     build: 
       context: ./backend-flask
       args:
@@ -27,6 +11,8 @@ services:
       - "4567:4567"
     volumes:
       - ./backend-flask:/backend-flask
+    networks:
+      - cruddur-net
     # healthcheck:
     #   test: ["CMD-SHELL", "curl -f http://localhost:4567/api/activities/home || exit 1 && curl -f https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}/api/activities/home || exit 1"]
     #   interval: 10m30s
@@ -34,21 +20,16 @@ services:
     #   retries: 5
     #   start_period: 30s
   frontend-react-js:
-    environment:
-      REACT_APP_BACKEND_URL: "https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
-      REACT_APP_OLTP_URL: "https://4318-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
-      REACT_APP_AWS_PROJECT_REGION: "${AWS_DEFAULT_REGION}"
-      REACT_APP_AWS_COGNITO_REGION: "${AWS_DEFAULT_REGION}"
-      REACT_APP_AWS_USER_POOLS_ID: "${AWS_USER_POOLS_ID}"
-      REACT_APP_CLIENT_ID: "${COGNITO_APP_CLIENT_ID}"
+    env_file:
+      - frontend-react-js.env
     build: 
       context: ./frontend-react-js
-      # args:
-      #   image_name: "${ECR_NODE_URL}:16.18"
     ports:
       - "3000:3000"
     volumes:
       - ./frontend-react-js:/frontend-react-js
+    networks:
+      - cruddur-net
     # healthcheck:
     #   test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1 && curl -f https://3000-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}/ || exit 1"]
     #   interval: 10m30s
@@ -65,6 +46,9 @@ services:
     ports:
       - 14268:14268
       - 4318:4318
+    networks:
+      - cruddur-net
+
   xray-daemon:
     image: "amazon/aws-xray-daemon"
     environment:
@@ -75,6 +59,9 @@ services:
       - "xray -o -b xray-daemon:2000"
     ports:
       - 2000:2000/udp
+    networks:
+      - cruddur-net
+
   dynamodb-local:
     # https://stackoverflow.com/questions/67533058/persist-local-dynamodb-data-in-volumes-lack-permission-unable-to-open-databa
     # We needed to add user:root to get this working.
@@ -87,6 +74,9 @@ services:
     volumes:
       - "./docker/dynamodb:/home/dynamodblocal/data"
     working_dir: /home/dynamodblocal
+    networks:
+      - cruddur-net
+
   db:
     image: postgres:13-alpine
     restart: always
@@ -97,13 +87,15 @@ services:
       - '5432:5432'
     volumes: 
       - db:/var/lib/postgresql/data
+    networks:
+      - cruddur-net
 
 # the name flag is a hack to change the default prepend folder
 # name when outputting the image names
 networks: 
-  internal-network:
+  cruddur-net:
     driver: bridge
-    name: cruddur
+    name: cruddur-net
 
 volumes:
   db:
