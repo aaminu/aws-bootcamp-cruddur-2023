@@ -13,4 +13,4 @@ source $bin_db_dir/drop
 source $bin_db_dir/create
 source $bin_db_dir/schema-load
 source $bin_db_dir/seed
-source $bin_db_dir/update-cognito-user-id
+python3 $bin_db_dir/update-cognito-user-id

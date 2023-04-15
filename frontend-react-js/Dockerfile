@@ -2,7 +2,7 @@
 
 # FROM ${image_name}
 
-FROM "node:16.18"
+FROM node:16.18
 
 ENV PORT=3000
 

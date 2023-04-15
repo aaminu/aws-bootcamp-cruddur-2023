@@ -161,6 +161,7 @@ def data_create_message():
     message_group_uuid = request.json.get('message_group_uuid', None)
     user_receiver_handle = request.json.get('handle', None)
     message = request.json['message']
+    app.logger.info("========user_receiver========: {}".format( user_receiver_handle))
     claims = request.args.get("claims")
     cognito_user_id = claims.get("sub")
     if cognito_user_id is None:
