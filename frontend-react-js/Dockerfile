@@ -1,6 +1,8 @@
-ARG image_name
+# ARG image_name
 
-FROM ${image_name}
+# FROM ${image_name}
+
+FROM "node:16.18"
 
 ENV PORT=3000
 

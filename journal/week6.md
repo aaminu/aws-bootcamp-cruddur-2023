@@ -194,3 +194,7 @@ docker build \
 
 docker tag frontend-react-js:latest $ECR_FRONTEND_REACT_URL:latest
 docker push $ECR_FRONTEND_REACT_URL:latest
+
+
+
+fix token refresh and replace in all required location
