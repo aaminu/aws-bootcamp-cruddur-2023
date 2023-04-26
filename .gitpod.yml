@@ -15,7 +15,7 @@ tasks:
 
   - name: npm-init
     command: |
-      "./$THEIA_WORKSPACE_ROOT/bin/frontend/generate-env"
+      ".$THEIA_WORKSPACE_ROOT/bin/frontend/generate-env"
       cd "$THEIA_WORKSPACE_ROOT/frontend-react-js"
       npm i --save \
         @opentelemetry/api \
@@ -34,7 +34,7 @@ tasks:
     
   - name: flask
     command: |
-      "./$THEIA_WORKSPACE_ROOT/bin/backend/generate-env"
+      ".$THEIA_WORKSPACE_ROOT/bin/backend/generate-env"
       cd "$THEIA_WORKSPACE_ROOT/backend-flask/"
       pip install -r requirements.txt
       
