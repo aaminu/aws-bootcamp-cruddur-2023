@@ -1,0 +1,15 @@
+#! /usr/bin/bash
+
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="Remove Avatar to S3"
+printf "${CYAN}== ${LABEL}===${NO_COLOR}\n"
+
+current_file_path=`realpath $0`
+serverless_dir=`dirname $current_file_path`
+DATA_FILE_PATH="$serverless_dir/files/data.jpg"
+
+
+
+aws s3 rm "s3://assets.$CRUDDUR_DOMAIN_NAME/avatars/original/data.jpg"
+aws s3 rm "s3://assets.$CRUDDUR_DOMAIN_NAME/avatars/processed/data.jpg"

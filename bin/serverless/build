@@ -1,0 +1,17 @@
+#! /usr/bin/bash -e 
+
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="Build Sharp Package Node"
+printf "${CYAN}== ${LABEL}===${NO_COLOR}\n"
+
+current_file_path=`realpath $0`
+bin_dir=`dirname $(dirname $current_file_path)`
+base_dir=`dirname $bin_dir`
+SERVERLESS_PROJECT_PATH="$base_dir/thumbing-serverless-cdk"
+
+cd $SERVERLESS_PROJECT_PATH
+
+npm install
+rm -rf node_modules/sharp
+SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --arch=x64 --platform=linux --libc=glibc sharp
