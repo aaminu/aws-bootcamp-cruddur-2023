@@ -45,6 +45,8 @@ tasks:
       npm i
       cdk bootstrap "aws://$AWS_ACCOUNT_ID/$AWS_DEFAULT_REGION"
       cp .env.example .env
+      cd "$THEIA_WORKSPACE_ROOT/aws/lambdas/process-images"
+      npm i
 
 ports:
   - port: 3000
