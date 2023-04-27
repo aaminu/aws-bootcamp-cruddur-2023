@@ -42,9 +42,9 @@ tasks:
     before: |
       npm install aws-cdk -g
       cd "$THEIA_WORKSPACE_ROOT/thumbing-serverless-cdk"
+      cp .env.example .env
       npm i
       cdk bootstrap "aws://$AWS_ACCOUNT_ID/$AWS_DEFAULT_REGION"
-      cp .env.example .env
       cd "$THEIA_WORKSPACE_ROOT/aws/lambdas/process-images"
       npm i
 

@@ -16,8 +16,9 @@ class UserActivities:
         model['errors'] = ['blank_user_handle']
       else:
         print("else:")
-        sql = db.template('users','show')
+        sql = db.read_sql_template('users','show')
         results = db.query_object_json(sql, handle=user_handle)
+
         model['data'] = results
 
       return model

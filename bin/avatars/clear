@@ -7,4 +7,4 @@ printf "${CYAN}== ${LABEL}===${NO_COLOR}\n"
 
 
 aws s3 rm "s3://aaminu-cruddur-uploaded-avatars/data.jpg"
-aws s3 rm "s3://assets.$CRUDDUR_DOMAIN_NAME/avatars/processed/data.jpg"
+aws s3 rm "s3://assets.$CRUDDUR_DOMAIN_NAME/avatars/data.jpg"
