@@ -14,6 +14,7 @@ from services.messages import *
 from services.create_message import *
 from services.show_activity import *
 from services.users_short import *
+from services.update_profile import *
 
 from lib.cognito_jwt_token import CognitoJwtToken
 from lib.jwt_verify_middleware import JWTVerificationMiddleware
@@ -261,6 +262,35 @@ def data_activities_reply(activity_uuid):
 def data_users_short(handle):
     data = UsersShort.run(handle)
     return data, 200
+
+
+@app.route("/api/profile/update", methods=['POST','OPTIONS'])
+@cross_origin()
+def data_update_profile():
+    bio          = request.json.get('bio',None)
+    display_name = request.json.get('display_name',None)
+    claims = request.args.get("claims")
+    cognito_user_id = claims.get("sub")
+
+    if cognito_user_id is None:
+        # unauthenicatied request
+        app.logger.info("Unauthenticated")
+        return {}, 401 
+
+    try:
+        model = UpdateProfile.run(
+        cognito_user_id=cognito_user_id,
+        bio=bio,
+        display_name=display_name
+        )
+        if model['errors'] is not None:
+            return model['errors'], 422
+        else:
+            return model['data'], 200
+    except Exception as e:
+        app.logger.debug(e)
+        return {}, 401
+
 
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ class Db:
         connection_url = os.getenv("CONNECTION_URL")
         self.pool = ConnectionPool(connection_url)
 
-    def read_sql_template(self, *args, log=False):
+    def read_sql_template(self, *args, log=True):
         """ Reading SQL Templates in db Directory"""
         path_list = list((app.root_path, 'db', 'sql',) + args)
         path_list[-1] = path_list[-1] + ".sql"
@@ -24,32 +24,32 @@ class Db:
         green = '\033[92m'
         no_color = '\033[0m'
         if log:
-            app.logger.info("\n")
-            app.logger.info(
+            print("\n")
+            print(
                 f'{green} Load SQL Template: {template_path} {no_color}')
 
         with open(template_path, 'r') as f:
             template_content = f.read()
         return template_content
 
-    def print_params(self, log=False, **params):
+    def print_params(self, log=True, **params):
         """Print Parameters passed into SQL"""
         blue = '\033[94m'
         no_color = '\033[0m'
         if log:
-            app.logger.info(f'{blue} SQL Params:{no_color}')
+            print(f'{blue} SQL Params:{no_color}')
             for key, value in params.items():
-                app.logger.info(f"{key}: {value}")
+                print(f"{key}: {value}")
 
-    def print_sql(self, title, sql, log=False):
+    def print_sql(self, title, sql, log=True):
         """Print SQL Statement"""
         cyan = '\033[96m'
         no_color = '\033[0m'
         if log:
-            app.logger.info(f'{cyan} SQL STATEMENT-[{title}]------{no_color}')
-            app.logger.info(sql)
+            print(f'{cyan} SQL STATEMENT-[{title}]------{no_color}')
+            print(sql)
 
-    def query_commit(self, sql, log=False, **params):
+    def query_commit(self, sql, log=True, **params):
         """ Commit a Query"""
         pattern = r"\bRETURNING\b"
         is_returning_id = re.search(pattern, sql)
@@ -71,7 +71,7 @@ class Db:
         except Exception as err:
             self.print_sql_err(err, log)
 
-    def query_array_json(self, sql, log=False, **params):
+    def query_array_json(self, sql, log=True, **params):
         """Query Database and return an array of json"""
         self.print_sql('array', sql, log)
         self.print_params(log, **params)
@@ -83,7 +83,7 @@ class Db:
                 json = cur.fetchone()
                 return json[0]
 
-    def query_object_json(self, sql, log=False, **params):
+    def query_object_json(self, sql, log=True, **params):
         """Query Database and return an array of json"""
         self.print_sql('json', sql, log)
         self.print_params(log, **params)
@@ -98,7 +98,7 @@ class Db:
                 else:
                     return json[0]
 
-    def query_value(self,sql, log=False, **params):
+    def query_value(self,sql, log=True, **params):
         self.print_sql('value',sql,log)
         with self.pool.connection() as conn:
             with conn.cursor() as cur:
@@ -124,7 +124,7 @@ class Db:
               """
         return sql
 
-    def print_sql_err(self, err, log=False):
+    def print_sql_err(self, err, log=True):
         # get details about the exception
         err_type, err_obj, traceback = sys.exc_info()
 
@@ -133,12 +133,12 @@ class Db:
 
         if log:
             # print the connect() error
-            app.logger.info("\npsycopg ERROR:", err, "on line number:", line_num)
-            app.logger.info("psycopg traceback:", traceback, "-- type:", err_type)
+            print("\npsycopg ERROR:", err, "on line number:", line_num)
+            print("psycopg traceback:", traceback, "-- type:", err_type)
 
             # print the pgcode and pgerror exceptions
-            app.logger.info("pgerror:", err.pgerror)
-            app.logger.info("pgcode:", err.pgcode, "\n")
+            print("pgerror:", err.pgerror)
+            print("pgcode:", err.pgcode, "\n")
 
 
 db = Db()
