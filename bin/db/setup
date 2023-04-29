@@ -14,3 +14,4 @@ source $bin_db_dir/create
 source $bin_db_dir/schema-load
 source $bin_db_dir/seed
 python3 $bin_db_dir/update-cognito-user-id
+source $bin_db_dir/migrate
