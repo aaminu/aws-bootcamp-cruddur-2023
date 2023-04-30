@@ -33,10 +33,12 @@ fi
 
 docker build \
 --build-arg REACT_APP_BACKEND_URL="https://$BACKEND_DOMAIN_URL" \
+--build-arg REACT_APP_FRONTEND_URL="https://$FRONTEND_DOMAIN_URL" \
 --build-arg REACT_APP_AWS_PROJECT_REGION="$AWS_DEFAULT_REGION" \
 --build-arg REACT_APP_AWS_COGNITO_REGION="$AWS_DEFAULT_REGION" \
 --build-arg REACT_APP_AWS_USER_POOLS_ID="$AWS_USER_POOLS_ID" \
 --build-arg REACT_APP_CLIENT_ID="$COGNITO_APP_CLIENT_ID" \
+--build-arg REACT_APP_API_GATEWAY_ENDPOINT="$API_GATEWAY_ENDPOINT" \
 -t frontend-react-js \
 -f $base_dir/frontend-react-js/$FILE_NAME $base_dir/frontend-react-js/
 
