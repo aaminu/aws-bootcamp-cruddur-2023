@@ -5,20 +5,20 @@ phases:
     runtime-versions:
       docker: 19
     commands:
-      - echo "cd into $CODEBUILD_SRC_DIR"
-      - cd $CODEBUILD_SRC_DIR
+      - echo "cd into $CODEBUILD_SRC_DIR/backend-flask"
+      - cd $CODEBUILD_SRC_DIR/backend-flask
       - "aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $IMAGE_URL"
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...          
-      - docker build -t backend-flask .
-      - "docker tag $REPO_NAME $IMAGE_URL/$REPO_NAME"
+      - docker build --build-arg image_name=$IMAGE_URL/$PYTHON_REPO:3.10-slim-buster -t backend-flask -f Dockerfile.prod .
+      - docker tag $REPO_NAME $IMAGE_URL/$REPO_NAME
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker image..
-      - "docker push $IMAGE_URL/$REPO_NAME"
+      - docker push $IMAGE_URL/$REPO_NAME
       - echo "imagedefinitions.json > [{\"name\":\"$CONTAINER_NAME\",\"imageUri\":\"$IMAGE_URL/$REPO_NAME\"}]" > imagedefinitions.json
       - printf "[{\"name\":\"$CONTAINER_NAME\",\"imageUri\":\"$IMAGE_URL/$REPO_NAME\"}]" > imagedefinitions.json
 
@@ -28,6 +28,7 @@ env:
     CONTAINER_NAME: backend-flask
     IMAGE_URL: 401093650699.dkr.ecr.us-east-1.amazonaws.com
     REPO_NAME: backend-flask:latest
+    PYTHON_REPO: cruddur-python
   parameter-store:
     AWS_ACCESS_KEY_ID: /cruddur/backend-flask/AWS_ACCESS_KEY_ID
     AWS_COGNITO_CLIENT_ID: 66nalap1u9b8s6efccre3ev0iu
