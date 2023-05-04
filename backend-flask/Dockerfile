@@ -2,7 +2,7 @@ ARG image_name
 
 FROM ${image_name}
 
-RUN apt-get update && apt-get install -y curl
+# RUN apt-get update && apt-get install -y curl
 
 WORKDIR /backend-flask
 
