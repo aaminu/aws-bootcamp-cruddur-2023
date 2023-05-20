@@ -1,5 +1,17 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: |
+  The base networking configuration for the Cruddur app with the following components
+  - VPC
+    - sets DNS hostnames for EC2 instances
+    - Only IPV4, IPV6 is disabled
+  - Internet Gateway
+  - Two route tables
+    - One with external target to Internet gateway and local target (Public)
+    - One with only local target (Private)
+  - 6 Subnets Explicitly attached to the route tables
+    - 3 Public Subnets numbered A - C and associated to the public route table
+    - 3 Private Subnets numbered A - C and associated to the private route table
+
   
 Parameters:
   Az1:
@@ -187,16 +199,24 @@ Outputs:
   VpcId:
     Value: !Ref VPC
     Export:
-      Name: VpcId
+      Name: !Sub "${AWS::StackName}VpcId"
   VpcCidrBlock:
     Value: !GetAtt VPC.CidrBlock
     Export:
-      Name: VpcCidrBlock
+      Name: !Sub "${AWS::StackName}VpcCidrBlock"
   SubnetCidrBlocks:
     Value: !Join [",", !Ref SubnetCidrBlocks]
     Export:
-      Name: SubnetCidrBlocks
-  SubnetIds:
-    Value: !Join [ ",", [ !Ref SubnetPubA,  !Ref SubnetPubB, !Ref SubnetPubC, !Ref SubnetPrivA, !Ref SubnetPrivB, !Ref SubnetPrivC] ]
+      Name: !Sub "${AWS::StackName}SubnetCidrBlocks"
+  PublicSubnetIds:
+    Value: !Join [ ",", [ !Ref SubnetPubA,  !Ref SubnetPubB, !Ref SubnetPubC ] ]
     Export:
-      Name: SubnetIds
+      Name: !Sub "${AWS::StackName}PublicSubnetIds"
+  PrivateSubnetIds:
+    Value: !Join [ ",", [!Ref SubnetPrivA, !Ref SubnetPrivB, !Ref SubnetPrivC] ]
+    Export:
+      Name: !Sub "${AWS::StackName}PrivateSubnetIds"
+  AvailabilityZones:
+    Value: !Join [ ",", [ !Ref Az1,  !Ref Az2, !Ref Az3] ]
+    Export:
+      Name: !Sub "${AWS::StackName}AvailabilityZones"
