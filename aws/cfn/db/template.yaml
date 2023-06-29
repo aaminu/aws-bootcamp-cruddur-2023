@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Primary Postgres RDS Database for Cruddur
+  - RDS Instance
+  - DB Security Group
+  - DBSubnetGroup
+
+Parameters:
+  NetworkingStack:
+    Type: String
+    Description: Base networking configuration eg. VPC, Subnets
+    Default: CrdNet
+  ClusterStack:
+    Type: String
+    Description: ECS Cluster for Cruddur; Fargate
+    Default: CrdCluster
+  BackupRetentionPeriod:
+    Type: Number
+    Default: 0
+  DBInstanceClass:
+    Type: String
+    Default: db.t4g.micro
+  DBInstanceIdentifier:
+    Type: String
+    Default: cruddur-instance
+  DBName:
+    Type: String
+    Default: cruddur
+  DeletionProtection:
+    Type: String
+    AllowedValues:
+      - true
+      - false
+    Default: true
+  EngineVersion:
+    Type: String
+    Default: '15.2'
+  MasterUsername:
+    Type: String
+  MasterUserPassword:
+    Type: String
+    NoEcho: true
+  
+Resources:
+  RDSPostgresSG:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for RDS # Required
+      GroupName: !Sub "${AWS::StackName}RDSSG"
+      SecurityGroupIngress: 
+        - IpProtocol: tcp
+          SourceSecurityGroupId:
+            Fn::ImportValue:
+              !Sub ${ClusterStack}ServiceSecurityGroupId
+          FromPort: 5432
+          ToPort: 5432
+          Description: ALB HTTP
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${NetworkingStack}VpcId
+  
+  DBSubnetGroup:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbsubnetgroup.html
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Sub "${AWS::StackName}DBSubnetGroup" # Required
+      DBSubnetGroupName: !Sub "${AWS::StackName}DBSubnetGroup"
+      SubnetIds: # Required
+        Fn::Split:
+          - ","
+          - Fn::ImportValue:
+              !Sub "${NetworkingStack}PublicSubnetIds"   
+
+  DatabaseInstance:
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbinstance.html
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: 'Snapshot'
+    UpdateReplacePolicy: 'Snapshot'
+    Properties:
+      AllocatedStorage: "20"
+      AllowMajorVersionUpgrade: true
+      AutoMinorVersionUpgrade: true
+      BackupRetentionPeriod: !Ref BackupRetentionPeriod
+      DBInstanceClass: !Ref DBInstanceClass
+      DBInstanceIdentifier: !Ref DBInstanceIdentifier
+      DBName: !Ref DBName
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      DeletionProtection: !Ref DeletionProtection
+      EnablePerformanceInsights: true
+      Engine: postgres
+      EngineVersion: !Ref EngineVersion
+      MasterUsername:  !Ref MasterUsername
+      MasterUserPassword: !Ref MasterUserPassword
+      PubliclyAccessible: true
+      VPCSecurityGroups:
+        - !GetAtt RDSPostgresSG.GroupId
