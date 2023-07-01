@@ -1,5 +1,4 @@
-#! /usr/bin/env bash
-set -e # stop the execution of the script if it fails
+#! /usr/bin/env bash -e 
 
 CFN_PATH="/workspace/aws-bootcamp-cruddur-2023/aws/cfn/db/template.yaml"
 CONFIG_PATH="/workspace/aws-bootcamp-cruddur-2023/aws/cfn/db/config.toml"
