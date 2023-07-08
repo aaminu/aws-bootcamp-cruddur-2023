@@ -52,6 +52,14 @@ tasks:
       cdk bootstrap "aws://$AWS_ACCOUNT_ID/$AWS_DEFAULT_REGION"
       cd "$THEIA_WORKSPACE_ROOT/aws/lambdas/process-images"
       npm i
+      
+  - name: aws-sam
+    init: |
+      cd /workspace
+      wget https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip
+      unzip aws-sam-cli-linux-x86_64.zip -d sam-installation
+      sudo ./sam-installation/install
+      cd $THEIA_WORKSPACE_ROOT
 
 ports:
   - port: 3000
