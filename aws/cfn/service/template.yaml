@@ -253,3 +253,9 @@ Resources:
       #    ContainerPort: !Ref ContainerPort
       ServiceName: !Ref ServiceName
       TaskDefinition: !Ref TaskDefinition
+
+Outputs:
+  ServiceName:
+    Value: !GetAtt FargateService.Name
+    Export:
+      Name: !Sub "${AWS::StackName}ServiceName"
