@@ -4,6 +4,8 @@ Transform: AWS::Serverless-2016-10-31
 Description: |
   - DynamoDB Table
   - DynamoDB Stream
+  - Log
+  - Execution Role
 
 Parameters:
   PythonRuntime:
