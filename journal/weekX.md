@@ -43,3 +43,23 @@ Setting up the required tool responsible for syncing the static file locted in t
 6. With everything setup above, I ran the [sync](../bin/frontend/sync) script and the ouput can be seen below:
 
     ![sync](./images/sync-tool.png)
+
+
+## Reconnect Database and Post Confirmation Lambda
+1. Started out by making the necessary changes to the cloudformation templates pushed in this [commit](https://github.com/aaminu/aws-bootcamp-cruddur-2023/commit/47ec58f938cd07c6185475bba603ff15635fcbf4). I executed the changeset and ensured every of the updates completed.
+
+2. I updated the `PROD_CONNECTION_URL` value with the new connection string.
+3. In the `CrdDbRDSSG`security group, I added a new inbound rule that accepts ingress from gitpod on port 5432. I also updated the gitpod env-vars `DB_SG_ID` and `DB_SG_RULE_ID` based on the new inbound rule.
+4. Ran the [db/connect](../bin/db/connect) script with *prod* argument to ensure every the DB was functioning. I ran the following scripts in the order listed below:
+    - [db/schema-load](..bin/db/schema-load) script
+    - [db/seed](..bin/db/seed) script
+    - [db/update-cognito-user-id](..bin/db/update-cognito-user-id) script
+    - [db/migrate](..bin/db/migrate) script 
+    Some of the scripts above required passing *prod* as the argument while others required pointing the `CONNECTION_URL` to `PROD_CONNECTION_URL`
+5. Refreshing the homepage reveals a working frontend with a single seed data post.
+6. Getting the post confirmation lambda to work involved the following steps:
+    - New security group `CognitoLambdaSG` with no inbound rule created. Included the new security group as an inbound traffic in `CrdDbRDSSG` on port 5432.
+    - In the Lambda function page, I replaced the connection url in the Environment variables of the configuration. 
+    - I replaced the old VPC and subnets with the new cloudformation provisioned VPC, subnets, and selected the `CognitoLambdaSG` security group. Setting was saved and allowed to propagate.
+7. Tested adding a new account and posting new cruds with success. 
+    
