@@ -1,0 +1,182 @@
+[
+  {
+    "path": "android-chrome-192x192.png",
+    "md5": "59a9482e575b2b6feeebc4f72af2b428",
+    "action": "ignore"
+  },
+  {
+    "path": "android-chrome-512x512.png",
+    "md5": "89198de5b64ecbf50a2174e48a4f471d",
+    "action": "no_change"
+  },
+  {
+    "path": "apple-touch-icon.png",
+    "md5": "40333f132c8a5b76657d7490bc9915ef",
+    "action": "ignore"
+  },
+  {
+    "path": "asset-manifest.json",
+    "md5": "e2b43f619407a903f2543b08fa5f5c9e",
+    "action": "no_change"
+  },
+  {
+    "path": "browserconfig.xml",
+    "md5": "a493ba0aa0b8ec8068d786d7248bb92c",
+    "action": "no_change"
+  },
+  {
+    "path": "favicon-16x16.png",
+    "md5": "93534392f993f17bebcbb5ceb9bf6c02",
+    "action": "ignore"
+  },
+  {
+    "path": "favicon-32x32.png",
+    "md5": "0d2e1debb745019a995135903b7d5d2c",
+    "action": "ignore"
+  },
+  {
+    "path": "favicon.ico",
+    "md5": "2c62e3258e4e4d044c232ad746d83729",
+    "action": "ignore"
+  },
+  {
+    "path": "index.html",
+    "md5": "63abffff74eb7c919b6903f5c675b5bf",
+    "action": "no_change"
+  },
+  {
+    "path": "mstile-144x144.png",
+    "md5": "38752cefcf801c965e52d3450e312d0e",
+    "action": "no_change"
+  },
+  {
+    "path": "mstile-150x150.png",
+    "md5": "2504f9fa6c801d4c9315fd6d7344c906",
+    "action": "no_change"
+  },
+  {
+    "path": "mstile-310x150.png",
+    "md5": "14820a6c94aaa7a7f9233305a34835cd",
+    "action": "no_change"
+  },
+  {
+    "path": "mstile-310x310.png",
+    "md5": "f232775db193c33ea76d5891edf22121",
+    "action": "no_change"
+  },
+  {
+    "path": "mstile-70x70.png",
+    "md5": "93d85767115bdc81bc99550a68ee15e7",
+    "action": "no_change"
+  },
+  {
+    "path": "robots.txt",
+    "md5": "fa1ded1ed7c11438a9b0385b1e112850",
+    "action": "ignore"
+  },
+  {
+    "path": "safari-pinned-tab.svg",
+    "md5": "734719239fa326857b049112422dafc7",
+    "action": "ignore"
+  },
+  {
+    "path": "site.webmanifest",
+    "md5": "b9aa277fcfc34c31db6c7a7ea3469b8c",
+    "action": "ignore"
+  },
+  {
+    "path": "static/css/main.0dc35f7e.css",
+    "md5": "ccc2a79022a3f936333bc95f8b68383b",
+    "action": "no_change"
+  },
+  {
+    "path": "static/css/main.0dc35f7e.css.map",
+    "md5": "a3a03a71811cd3bd03db89fd8482d9f2",
+    "action": "no_change"
+  },
+  {
+    "path": "static/js/787.cda612ba.chunk.js",
+    "md5": "e16f9d67ee3df650aeeb92c666f7b183",
+    "action": "no_change"
+  },
+  {
+    "path": "static/js/787.cda612ba.chunk.js.map",
+    "md5": "69f53b560922f6f954937aca6c073a35",
+    "action": "no_change"
+  },
+  {
+    "path": "static/js/main.66123e12.js",
+    "md5": "7438fd671faad95c5405ea19b614b05a",
+    "action": "no_change"
+  },
+  {
+    "path": "static/js/main.66123e12.js.LICENSE.txt",
+    "md5": "899cc93f537869058af6fb110fc702a5",
+    "action": "no_change"
+  },
+  {
+    "path": "static/js/main.66123e12.js.map",
+    "md5": "64825140255c36b8f2cd14ddac86e745",
+    "action": "no_change"
+  },
+  {
+    "path": "static/media/bomb.585e455838778938e175c4311b6a9284.svg",
+    "md5": "5540aa7031f7c3b7720dd15569fecb15",
+    "action": "no_change"
+  },
+  {
+    "path": "static/media/elipses.e1e2c11435294de336f167d28e3387f2.svg",
+    "md5": "34beef7d8be2e742957783a41f8bb1e6",
+    "action": "no_change"
+  },
+  {
+    "path": "static/media/heart.c31d61db7c2d096bd3219a00053eca01.svg",
+    "md5": "7746f5e4d82a2cf71a3d1f30fdef6ace",
+    "action": "no_change"
+  },
+  {
+    "path": "static/media/home.4e94b7659059a75c271100122f0b2f23.svg",
+    "md5": "cfc4b2032f43ad932daaaa29251afd47",
+    "action": "no_change"
+  },
+  {
+    "path": "static/media/logo.5753985f6358b14bd71dac0a2953098c.svg",
+    "md5": "45da38811712fc1252e8e6459c5b329c",
+    "action": "no_change"
+  },
+  {
+    "path": "static/media/messages.9c2a92621ab30f0780dfbfcc7af26768.svg",
+    "md5": "cfd494d4bc6d15112d90b170c9ac6e61",
+    "action": "no_change"
+  },
+  {
+    "path": "static/media/more.e13deeada4344cadc8f349f1575607fa.svg",
+    "md5": "70e07907d101e97a34c56f4c86ee115b",
+    "action": "no_change"
+  },
+  {
+    "path": "static/media/notifications.30f93bb0a78cc8bb07e1a283bb8a3495.svg",
+    "md5": "b0be03bb6586c020faddd6004362e327",
+    "action": "no_change"
+  },
+  {
+    "path": "static/media/profile.a195fff06191f3e91d26f8f44f495b0a.svg",
+    "md5": "3433d26c7515ba82ff82d96749f37f6c",
+    "action": "no_change"
+  },
+  {
+    "path": "static/media/reply.e855b43c7d756ec100f0520b73df4964.svg",
+    "md5": "a597004ebc0bbfcb8381294c50f8c51e",
+    "action": "no_change"
+  },
+  {
+    "path": "static/media/repost.3d8455b75243ae9c8440ddecb016ce72.svg",
+    "md5": "7ef1e7909877e4829c7f76dc845c8500",
+    "action": "no_change"
+  },
+  {
+    "path": "static/media/share.858c53d43c95f51422eb938be3942086.svg",
+    "md5": "f645a05e1019f2175e1eba5956f4cfb9",
+    "action": "no_change"
+  }
+]
