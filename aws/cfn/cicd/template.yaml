@@ -11,7 +11,7 @@ Parameters:
     Type: String
   ClusterStack:
     Type: String
-  ServiceStack:
+  ServiceStackServiceName:
     Type: String
   ArtifactBucketName:
     Type: String
@@ -87,9 +87,9 @@ Resources:
                 ClusterName:
                   Fn::ImportValue:
                     !Sub ${ClusterStack}ClusterName
-                ServiceName:
-                  Fn::ImportValue:
-                    !Sub ${ServiceStack}ServiceName
+                ServiceName: !Ref ServiceStackServiceName
+                  # Fn::ImportValue:
+                  #  !Sub ${ServiceStack}ServiceName
   CodePipelineRole:
     Type: AWS::IAM::Role
     Properties:

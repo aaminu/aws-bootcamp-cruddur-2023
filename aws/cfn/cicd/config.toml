@@ -4,7 +4,7 @@ region = 'us-east-1'
 stack_name = 'CrdCicd'
 
 [parameters]
-ServiceStack = 'CrdSrvBackendFlask'
+ServiceStackServiceName = 'backend-flask'
 ClusterStack = 'CrdCluster'
 GitHubBranch = 'prod'
 GithubRepo = 'aaminu/aws-bootcamp-cruddur-2023'

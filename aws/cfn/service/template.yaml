@@ -47,9 +47,9 @@ Parameters:
   EnvCognitoUserPoolClientId:
     Type: String
     Default: 66nalap1u9b8s6efccre3ev0iu
-  EnvFrontendUrl:
+  EnvFrontendUrL:
     Type: String
-    Default: "https://app.cruddur.aaminu.com"
+    Default: "https://cruddur.aaminu.com"
   EnvBackendUrl:
     Type: String
     Default: "https://api.cruddur.aaminu.com"
@@ -164,7 +164,7 @@ Resources:
               - 'CMD-SHELL'
               - 'python /backend-flask/bin/flask/health-check'
             Interval: 30
-            Timeout: 5
+            Timeout: 6
             Retries: 3
             StartPeriod: 60
           PortMappings:
@@ -188,7 +188,7 @@ Resources:
             - Name: 'AWS_COGNITO_CLIENT_ID'
               Value: !Ref EnvCognitoUserPoolClientId
             - Name: 'FRONTEND_URL'
-              Value: !Ref EnvFrontendUrl
+              Value: !Ref EnvFrontendUrL
             - Name: 'BACKEND_URL'
               Value: !Ref EnvBackendUrl
             - Name: 'AWS_DEFAULT_REGION'
