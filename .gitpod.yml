@@ -4,6 +4,8 @@ tasks:
       pip install cfn-lint
       cargo install cfn-guard
       gem install cfn-toml
+      gem install aws_s3_website_sync
+      gem install dotenv
   - name: aws-cli
     env:
       AWS_CLI_AUTO_PROMPT: on-partial

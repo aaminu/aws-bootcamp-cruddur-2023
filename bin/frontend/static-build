@@ -1,0 +1,20 @@
+#! /usr/bin/bash -e 
+
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="Frontend Static Build"
+printf "${CYAN}== ${LABEL}===${NO_COLOR}\n"
+
+current_file_path=`realpath $0`
+bin_dir=`dirname $(dirname $current_file_path)`
+base_dir=`dirname $bin_dir`
+FRONTEND_REACT_JS_PATH="$base_dir/frontend-react-js"
+
+echo $FRONTEND_REACT_JS_PATH
+
+REACT_APP_BACKEND_URL="https://api.cruddur.aaminu.com" \
+REACT_APP_AWS_PROJECT_REGION="$AWS_DEFAULT_REGION" \
+REACT_APP_AWS_COGNITO_REGION="$AWS_DEFAULT_REGION" \
+REACT_APP_AWS_USER_POOLS_ID="$AWS_USER_POOLS_ID" \
+REACT_APP_CLIENT_ID="$COGNITO_APP_CLIENT_ID" \
+npm run build
