@@ -9,17 +9,20 @@ class Messages:
       'data': None
     }
 
-    sql = db.read_sql_template('users','uuid_from_cognito_user_id')
-    my_user_uuid = db.query_value(sql, **{
-      'cognito_user_id': cognito_user_id
-    })
+    if cognito_user_id is None:
+      model['error'] = ['cognito_user_id_blank']
+    else:
+      sql = db.read_sql_template('users','uuid_from_cognito_user_id')
+      my_user_uuid = db.query_value(sql, **{
+        'cognito_user_id': cognito_user_id
+      })
+      print(f"UUID: {my_user_uuid}")
 
-    print(f"UUID: {my_user_uuid}")
+      ddb = Ddb.client()
+      data = Ddb.list_messages(ddb, message_group_uuid)
+      print("list_messages")
+      print(data)
 
-    ddb = Ddb.client()
-    data = Ddb.list_messages(ddb, message_group_uuid)
-    print("list_messages")
-    print(data)
-
-    model['data'] = data
+      model['data'] = data
+    
     return model

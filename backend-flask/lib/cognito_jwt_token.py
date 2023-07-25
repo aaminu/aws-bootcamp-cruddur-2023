@@ -1,3 +1,4 @@
+import os
 import time
 import requests
 from jose import jwk, jwt
@@ -105,3 +106,9 @@ class CognitoJwtToken:
         self._check_audience(claims)
 
         self.claims = claims 
+
+cognito_jwt = CognitoJwtToken(
+    user_pool_id=os.getenv("AWS_COGNITO_USER_POOLS_ID"),
+    user_pool_client_id=os.getenv("AWS_COGNITO_CLIENT_ID"),
+    region=os.getenv("AWS_DEFAULT_REGION")
+)
