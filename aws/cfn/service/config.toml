@@ -1,0 +1,9 @@
+[deploy]
+bucket  = 'cfn-artifacts-aaminu'
+region = 'us-east-1'
+stack_name = 'CrdSrvBackendFlask'
+
+[parameters]
+EnvFrontendUrl = 'https://cruddur.aaminu.com'
+EnvBackendUrl = 'https://api.cruddur.aaminu.com'
+DDBMessageTable = 'CrdDdb-DynamoDBTable-16BW8WYFVL0U2'

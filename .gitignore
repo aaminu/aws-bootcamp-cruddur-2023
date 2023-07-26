@@ -2,3 +2,8 @@ docker/*
 frontend-react-js/build/*
 *.env
 node_modules
+build.toml
+.aws-sam
+tmp/*
+!tmp/sync-changeset-*.json
+*.zip

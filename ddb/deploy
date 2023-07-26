@@ -1,0 +1,17 @@
+#! /usr/bin/bash -e
+
+PACKAGED_TEMPLATE_PATH="/workspace/aws-bootcamp-cruddur-2023/.aws-sam/build/packaged.yaml"
+CONFIG_PATH="/workspace/aws-bootcamp-cruddur-2023/ddb/config.toml"
+
+/workspace/aws-bootcamp-cruddur-2023/ddb/build
+/workspace/aws-bootcamp-cruddur-2023/ddb/package
+
+echo "== deploy"
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html
+sam deploy \
+  --template-file $PACKAGED_TEMPLATE_PATH  \
+  --config-file $CONFIG_PATH \
+  --stack-name "CrdDdb" \
+  --tags group=cruddur-ddb \
+  --no-execute-changeset \
+  --capabilities "CAPABILITY_NAMED_IAM"

@@ -1,0 +1,11 @@
+#! /usr/bin/bash -e
+
+CFN_PATH="/workspace/aws-bootcamp-cruddur-2023/aws/cfn/networking/template.yaml"
+
+aws cloudformation deploy \
+    --stack-name "CrdNet" \
+    --template-file $CFN_PATH \
+    --s3-bucket "cfn-artifacts-aaminu"  \
+    --no-execute-changeset \
+    --tags group=cruddur-networking \
+    --capabilities CAPABILITY_NAMED_IAM

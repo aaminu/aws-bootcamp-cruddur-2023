@@ -26,13 +26,13 @@ class CreateMessage:
     if message == None or len(message) < 1:
       model['errors'] = ['message_blank'] 
     elif len(message) > 1024:
-      model['errors'] = ['message_exceed_max_chars'] 
+      model['errors'] = ['message_exceed_max_chars_1024'] 
 
     if model['errors']:
       # return what we provided
       model['data'] = {
-        'display_name': 'Andrew Brown',
-        'handle':  user_sender_handle,
+        'display_name': '',
+        'handle':  cognito_user_id,
         'message': message
       }
     else:

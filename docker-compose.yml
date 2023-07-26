@@ -5,6 +5,7 @@ services:
       - backend-flask.env
     build: 
       context: ./backend-flask
+      dockerfile: Dockerfile
       args:
         image_name: "${ECR_PYTHON_URL}:3.10-slim-buster"
     ports:

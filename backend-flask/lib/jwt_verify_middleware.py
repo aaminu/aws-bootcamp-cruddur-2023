@@ -1,6 +1,6 @@
 from flask import request
 from werkzeug.datastructures import ImmutableMultiDict
-
+from lib.cognito_jwt_token import cognito_jwt as jwt_decoder
 
 class JWTVerificationMiddleware():
     '''
@@ -49,7 +49,7 @@ class JWTVerificationMiddleware():
 
     @staticmethod
     def extract_access_token(request_headers):
-        access_token = None
+        access_token = "null"
         auth_header = request_headers.get("Authorization")
         if auth_header and " " in auth_header:
             _, access_token = auth_header.split()
