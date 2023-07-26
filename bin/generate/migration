@@ -22,13 +22,13 @@ from lib.db import db
 class {klass}Migration:
   def migrate_sql():
     data = \"\"\"
-    ALTER TABLE public.users ADD COLUMN bio text;
+    <SQL COMMAND HERE>
     \"\"\"
     return data
 
   def rollback_sql():
     data = \"\"\"
-    ALTER TABLE public.users DROP COLUMN bio;
+    <SQL COMMAND HERE>
     \"\"\"
     return data
 
@@ -38,7 +38,7 @@ class {klass}Migration:
   def rollback():
     db.query_commit({klass}Migration.rollback_sql())
 
-migration = AddBioColumnMigration
+migration = {klass}Migration
 """
 #remove leading and trailing new lines
 file_content = file_content.lstrip('\n').rstrip('\n')

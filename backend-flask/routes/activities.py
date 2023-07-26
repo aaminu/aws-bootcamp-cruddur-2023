@@ -54,8 +54,7 @@ def load(app):
     @cross_origin()
     def data_activities_reply(activity_uuid):
         claims = request.args.get("claims")
-        username = claims.get("username")
+        cognito_user_id = claims.get("sub")
         message = request.json['message']
-        app.logger.info(claims)
-        model = CreateReply.run(message, username, activity_uuid)
+        model = CreateReply.run(message, cognito_user_id, activity_uuid)
         return model_json(model)
