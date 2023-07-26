@@ -62,4 +62,20 @@ Setting up the required tool responsible for syncing the static file locted in t
     - In the Lambda function page, I replaced the connection url in the Environment variables of the configuration. 
     - I replaced the old VPC and subnets with the new cloudformation provisioned VPC, subnets, and selected the `CognitoLambdaSG` security group. Setting was saved and allowed to propagate.
 7. Tested adding a new account and posting new cruds with success. 
-    
+
+
+## Other Tasks
+All other tasks were performed such as:
+- Ensure CI/CD pipeline works
+- Refactor to use JWT Decorator in Flask App (In this case, I continued to use the middleware I worte)
+- Refactor App.py
+- Refactor Flask Routes
+- Implement Replies for Posts
+- Improved Error Handling for the app
+- More General Cleanup.
+
+Futhermore, to get the message to a working state in production, the following was done:
+- Ran the migration script on the production postgres database
+- Made changes to the the neccesarry CFN stacks e.g the DynamoDB stack was modified so that the lambda processing the stream would know the table name, a machine user was created only for DynamoDB processes.
+- Did a static build for the front end and pushed it to CDN
+- Finally triggered a codepipline build by doing a PR into prod branch.
