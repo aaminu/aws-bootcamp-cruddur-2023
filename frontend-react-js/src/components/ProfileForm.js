@@ -8,6 +8,7 @@ import FormErrors from 'components/FormErrors';
 export default function ProfileForm(props) {
   const [bio, setBio] = React.useState('');
   const [displayName, setDisplayName] = React.useState('');
+  const [errors, setErrors] = React.useState('');
 
   React.useEffect(()=>{
     setBio(props.profile.bio || '');
@@ -80,10 +81,14 @@ export default function ProfileForm(props) {
       bio: bio,
       display_name: displayName
     }
-    put(url,payload_data,setErrors,function(data){
-      setBio(null)
-      setDisplayName(null)
-      props.setPopped(false)
+    put(url,payload_data,{
+      auth: true,
+      setErrors: setErrors,
+      success: function(data){
+        setBio(null)
+        setDisplayName(null)
+        props.setPopped(false)
+      }
     })
   }
 

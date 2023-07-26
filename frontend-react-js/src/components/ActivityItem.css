@@ -1,8 +1,16 @@
 .activity_item {
   display: flex;
   flex-direction: column;
-  border-bottom: solid 1px rgb(31,36,49);
+  border-bottom: solid 1px rgb(60,54,79);
   overflow: hidden;
+}
+
+.activity_item.clickable:hover {
+  cursor: pointer;
+}
+
+.activity_item.clickable:hover {
+  background: rgba(255,255,255,0.15);
 }
 
 .replies {
@@ -56,3 +64,10 @@
 .activity_item .activity_actions .action:hover .icon {
   fill: rgb(149,0,255);
 }
+
+.activity_item.expanded .activity_content {
+  display: flex;
+}
+.activity_item.expanded .activity_content .activity_identity{
+  flex-grow: 1;
+} 

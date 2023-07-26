@@ -6,11 +6,12 @@ from lib.helpers import model_json
 from services.user_activities import UserActivities
 from services.users_short import UsersShort
 from services.update_profile import UpdateProfile
+from services.show_activity import ShowActivity
 
 
 def load(app):
     @app.route("/api/activities/@<string:handle>", methods=['GET'])
-    def data_handle(handle):
+    def data_users_activities(handle):
         model = UserActivities.run(handle)
         return model_json(model)
 
@@ -33,3 +34,8 @@ def load(app):
             display_name=display_name
             )
         return model_json(model)
+
+    @app.route("/api/activities/<string:activity_uuid>", methods=['GET'])
+    def data_show_activity(activity_uuid):
+        data = ShowActivity.run(activity_uuid)
+        return data, 200

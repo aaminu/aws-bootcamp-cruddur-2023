@@ -35,8 +35,8 @@ class CreateReply:
     return model
 
   def create_reply(cognito_user_id, activity_uuid, message):
-    sql = db.template('activities','reply')
-    uuid = db.query_commit(sql,{
+    sql = db.read_sql_template('activities','reply')
+    uuid = db.query_commit(sql, **{
       'cognito_user_id': cognito_user_id,
       'reply_to_activity_uuid': activity_uuid,
       'message': message,
@@ -44,7 +44,7 @@ class CreateReply:
     return uuid
 
   def query_object_activity(uuid):
-    sql = db.template('activities','object')
-    return db.query_object_json(sql,{
+    sql = db.read_sql_template('activities','object')
+    return db.query_object_json(sql, **{
       'uuid': uuid
     })
