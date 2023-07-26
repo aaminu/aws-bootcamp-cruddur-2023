@@ -47,12 +47,17 @@ Parameters:
   EnvCognitoUserPoolClientId:
     Type: String
     Default: 66nalap1u9b8s6efccre3ev0iu
-  EnvFrontendUrL:
+  EnvFrontendUrl:
     Type: String
     Default: "https://cruddur.aaminu.com"
   EnvBackendUrl:
     Type: String
     Default: "https://api.cruddur.aaminu.com"
+  DDBMessageTable:
+    Type: String
+  FlaskEnv:
+    Type: String
+    Default: production
   SecretsAWSAccessKeyId:
     Type: String
     Default: 'arn:aws:ssm:us-east-1:401093650699:parameter/cruddur/backend-flask/AWS_ACCESS_KEY_ID'
@@ -179,6 +184,10 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: !Ref ServiceName
           Environment:
+            - Name: FLASK_ENV
+              Value: !Ref FlaskEnv
+            - Name: DDB_MESSAGE_TABLE
+              Value: !Ref DDBMessageTable
             - Name: 'OTEL_SERVICE_NAME'
               Value: !Ref EnvOtelServiceName
             - Name: 'OTEL_EXPORTER_OTLP_ENDPOINT'
@@ -188,7 +197,7 @@ Resources:
             - Name: 'AWS_COGNITO_CLIENT_ID'
               Value: !Ref EnvCognitoUserPoolClientId
             - Name: 'FRONTEND_URL'
-              Value: !Ref EnvFrontendUrL
+              Value: !Ref EnvFrontendUrl
             - Name: 'BACKEND_URL'
               Value: !Ref EnvBackendUrl
             - Name: 'AWS_DEFAULT_REGION'

@@ -14,11 +14,11 @@ export default function SignupPage() {
   const [email, setEmail] = React.useState('');
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [errors, setErrors] = React.useState('');
+  const [errors, setErrors] = React.useState([]);
 
   const onsubmit = async (event) => {
     event.preventDefault();
-    setErrors('')
+    setErrors([])
     try {
         const { user } = await Auth.signUp({
           username: email,
@@ -36,7 +36,7 @@ export default function SignupPage() {
         window.location.href = `/confirm?email=${email}`
     } catch (error) {
         console.log(error);
-        setErrors(error.message)
+        setErrors([error.message])
     }
     return false
   }

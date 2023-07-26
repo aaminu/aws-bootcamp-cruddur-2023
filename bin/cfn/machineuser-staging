@@ -1,8 +1,7 @@
 #! /usr/bin/bash -e
 
-
-CFN_PATH="/workspace/aws-bootcamp-cruddur-2023/aws/cfn/service/template.yaml"
-CONFIG_PATH="/workspace/aws-bootcamp-cruddur-2023/aws/cfn/service/config.toml"
+CFN_PATH="/workspace/aws-bootcamp-cruddur-2023/aws/cfn/machine-user/template.yaml"
+CONFIG_PATH="/workspace/aws-bootcamp-cruddur-2023/aws/cfn/machine-user/config.toml"
 echo $CFN_PATH
 
 cfn-lint $CFN_PATH
@@ -10,14 +9,13 @@ cfn-lint $CFN_PATH
 BUCKET=$(cfn-toml key deploy.bucket -t $CONFIG_PATH)
 REGION=$(cfn-toml key deploy.region -t $CONFIG_PATH)
 STACK_NAME=$(cfn-toml key deploy.stack_name -t $CONFIG_PATH)
-PARAMETERS=$(cfn-toml params v2 -t $CONFIG_PATH)
 
 aws cloudformation deploy \
   --stack-name $STACK_NAME \
   --s3-bucket $BUCKET \
+  --s3-prefix db \
   --region $REGION \
   --template-file "$CFN_PATH" \
   --no-execute-changeset \
-  --tags group=cruddur-backend-flask \
-  --parameter-overrides $PARAMETERS \
+  --tags group=cruddur-machine-user \
   --capabilities CAPABILITY_NAMED_IAM

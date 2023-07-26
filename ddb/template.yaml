@@ -77,7 +77,11 @@ Resources:
             Stream: !GetAtt DynamoDBTable.StreamArn
             BatchSize: 1
             # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-function-dynamodb.html#sam-function-dynamodb-startingposition
-            StartingPosition: LATEST        
+            StartingPosition: LATEST
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DynamoDBTable
+          
   
   LambdaLogGroup:
     Type: "AWS::Logs::LogGroup"

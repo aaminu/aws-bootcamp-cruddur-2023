@@ -27,7 +27,7 @@ def lambda_handler(event, context):
         print("GRUP ===>",group_uuid,message)
         
         table_name = os.getenv('TABLE_NAME')
-        index_name = os.getenv('INDEX_NAME')
+        index_name = "message-group-sk-index"
         table = dynamodb.Table(table_name)
         data = table.query(
         IndexName=index_name,
