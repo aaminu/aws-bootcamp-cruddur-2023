@@ -2,7 +2,7 @@ import './ProfileForm.css';
 import React from "react";
 import process from 'process';
 import {getAccessToken} from 'lib/CheckAuth';
-import {put} from 'lib/Requests';
+import {post} from 'lib/Requests';
 import FormErrors from 'components/FormErrors';
 
 export default function ProfileForm(props) {
@@ -18,7 +18,7 @@ export default function ProfileForm(props) {
   const s3uploadkey = async (extension)=> {
     console.log('ext',extension)
     try {
-      const gateway_url = `${process.env.REACT_APP_API_GATEWAY_ENDPOINT_URL}/avatars/key_upload`
+      const gateway_url = `${process.env.REACT_APP_API_GATEWAY_ENDPOINT}/avatars/key_upload`
       await getAccessToken()
       const access_token = localStorage.getItem("access_token")
       const json = {
@@ -63,7 +63,6 @@ export default function ProfileForm(props) {
         headers: {
           'Content-Type': type
       }})
-      await res.json();
       if (res.status === 200) {
         
       } else {
@@ -81,7 +80,7 @@ export default function ProfileForm(props) {
       bio: bio,
       display_name: displayName
     }
-    put(url,payload_data,{
+    post(url,payload_data,{
       auth: true,
       setErrors: setErrors,
       success: function(data){
