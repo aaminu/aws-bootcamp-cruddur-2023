@@ -11,11 +11,13 @@ from services.show_activity import ShowActivity
 
 def load(app):
     @app.route("/api/activities/@<string:handle>", methods=['GET'])
+    @cross_origin()
     def data_users_activities(handle):
         model = UserActivities.run(handle)
         return model_json(model)
 
     @app.route("/api/users/@<string:handle>/short", methods=['GET'])
+    @cross_origin()
     def data_users_short(handle):
         data = UsersShort.run(handle)
         return data, 200
