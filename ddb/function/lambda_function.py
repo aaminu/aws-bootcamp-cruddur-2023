@@ -3,9 +3,6 @@ import boto3
 import os
 from boto3.dynamodb.conditions import Key, Attr
 
-# region_name = os.getenv('AWS_REGION_NAME')
-# endpoint_url = os.getenv('ENPOINT_URL')
-
 dynamodb = boto3.resource(
  'dynamodb',
  region_name='us-east-1',
